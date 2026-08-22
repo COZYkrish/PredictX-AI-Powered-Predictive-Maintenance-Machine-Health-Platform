@@ -1,0 +1,14 @@
+psutil>=5.9.0
+pydantic>=2.0.0
+pywin32>=306
+WMI>=1.5.1
+
+pandas
+numpy
+scikit-learn
+xgboost
+lightgbm
+joblib
+pyyaml
+matplotlib
+seaborn

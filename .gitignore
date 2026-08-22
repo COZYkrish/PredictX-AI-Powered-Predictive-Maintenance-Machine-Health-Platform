@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+logs/
+data/
+config/device_id.txt
+.env

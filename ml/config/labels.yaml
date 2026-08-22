@@ -1,0 +1,22 @@
+proxy_health:
+  enabled: true
+  thresholds:
+    cpu_high_percent: 90.0
+    memory_high_percent: 90.0
+    temperature_high_c: 85.0
+    disk_pressure: 90.0
+  durations:
+    cpu_high_seconds: 60
+    temperature_high_seconds: 60
+
+risk_thresholds:
+  low_max: 0.30
+  medium_max: 0.60
+  high_max: 0.80
+  critical_min: 0.80
+
+data_requirements:
+  minimum_samples: 10
+  minimum_duration_hours: 0.01
+  minimum_devices: 1
+  minimum_samples_per_class: 2
