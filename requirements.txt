@@ -12,3 +12,21 @@ joblib
 pyyaml
 matplotlib
 seaborn
+
+# Phase 3 Backend
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+psycopg2-binary
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+slowapi
+pydantic-settings
+
+# Testing
+pytest-asyncio
+httpx
+
+email-validator

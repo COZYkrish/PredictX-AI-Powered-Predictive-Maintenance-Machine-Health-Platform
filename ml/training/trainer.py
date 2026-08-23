@@ -85,7 +85,7 @@ def train_pipeline(df: pd.DataFrame, target_col: str = 'proxy_health_label'):
                 )
             elif name == "LightGBM":
                 # LightGBM early stopping
-                from lightgbm.callback import early_stopping
+                from lightgbm import early_stopping
                 model.fit(
                     X_train_prep, y_train,
                     eval_set=[(X_val_prep, y_val)],

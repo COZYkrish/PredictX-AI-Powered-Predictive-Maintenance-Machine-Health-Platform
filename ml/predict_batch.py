@@ -25,7 +25,8 @@ def main():
         logging.error("No supervised model found. Train first.")
         return
         
-    df = load_data(args.input)
+    from .data.dataset_builder import build_dataset
+    df = build_dataset(args.input)
     if df.empty:
         logging.error("Input data is empty.")
         return
