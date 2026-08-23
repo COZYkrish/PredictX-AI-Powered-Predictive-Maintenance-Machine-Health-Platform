@@ -2,6 +2,7 @@
 
 import { Menu, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DeviceSelector } from '@/components/device-selector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +35,9 @@ export function Navbar({ onMenuClick }: NavbarProps) {
       <div className="flex flex-1 items-center justify-between">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold lg:hidden">PredictX</h1>
+          <div className="hidden md:block ml-4">
+            <DeviceSelector />
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
