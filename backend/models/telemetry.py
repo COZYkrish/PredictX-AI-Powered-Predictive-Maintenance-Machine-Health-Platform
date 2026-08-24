@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Integer, Boolean, DateTime, ForeignKey, Index, UniqueConstraint
+from sqlalchemy import Column, String, Float, Integer, Boolean, DateTime, ForeignKey, Index, UniqueConstraint, JSON
 from sqlalchemy.sql import func
 from backend.db.base import Base
 
@@ -44,6 +44,7 @@ class TelemetrySample(Base):
     storage_temperature_c = Column(Float)
     
     process_count = Column(Integer)
+    top_processes = Column(JSON)
     uptime_seconds = Column(Float)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

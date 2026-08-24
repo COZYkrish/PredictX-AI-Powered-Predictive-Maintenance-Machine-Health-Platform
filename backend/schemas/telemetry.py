@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 class TelemetryIn(BaseModel):
@@ -41,6 +41,7 @@ class TelemetryIn(BaseModel):
     storage_temperature_c: Optional[float] = None
     
     process_count: Optional[int] = None
+    top_processes: Optional[List[Dict[str, Any]]] = None
     uptime_seconds: Optional[float] = None
 
 class TelemetryBatchIn(BaseModel):

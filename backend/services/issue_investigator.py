@@ -49,25 +49,51 @@ def investigate_issue(db: Session, issue: Issue, telemetry_window: List[Telemetr
     causes = []
     evidence_level = EvidenceLevelEnum.UNKNOWN
     
+    # Extract top processes if available
+    latest_telemetry = telemetry_window[-1] if telemetry_window else None
+    top_processes = latest_telemetry.top_processes if latest_telemetry and getattr(latest_telemetry, "top_processes", None) else None
+    
     if issue.issue_type == "HIGH_CPU_USAGE":
-        # Check process count if available
-        process_counts = [t.process_count for t in telemetry_window if t.process_count is not None]
-        if process_counts and max(process_counts) > 200:
-            causes.append("High number of background processes")
-            evidence_level = EvidenceLevelEnum.SUPPORTED
+        if top_processes:
+            cpu_procs = sorted(top_processes, key=lambda p: p.get('cpu_percent', 0), reverse=True)[:3]
+            proc_details = "\n".join([f"{p.get('process_name', 'Unknown')}: {p.get('cpu_percent', 0)}%" for p in cpu_procs if p.get('cpu_percent', 0) > 5])
+            if proc_details:
+                issue.explanation += f"\n\nTOP CPU CONSUMERS:\n{proc_details}"
+                causes.append("High CPU consumption by specific processes")
+                evidence_level = EvidenceLevelEnum.CONFIRMED_BY_TELEMETRY
+            else:
+                causes.append("Intensive application workload")
+                evidence_level = EvidenceLevelEnum.POSSIBLE
         else:
-            causes.append("Intensive application workload")
-            evidence_level = EvidenceLevelEnum.POSSIBLE
+            process_counts = [t.process_count for t in telemetry_window if t.process_count is not None]
+            if process_counts and max(process_counts) > 200:
+                causes.append("High number of background processes")
+                evidence_level = EvidenceLevelEnum.SUPPORTED
+            else:
+                causes.append("Intensive application workload")
+                evidence_level = EvidenceLevelEnum.POSSIBLE
             
     elif issue.issue_type == "MEMORY_PRESSURE":
-        process_counts = [t.process_count for t in telemetry_window if t.process_count is not None]
-        if process_counts and max(process_counts) > 200:
-            causes.append("Numerous background processes consuming RAM")
-            evidence_level = EvidenceLevelEnum.SUPPORTED
+        if top_processes:
+            mem_procs = sorted(top_processes, key=lambda p: p.get('memory_percent', 0), reverse=True)[:3]
+            proc_details = "\n".join([f"{p.get('process_name', 'Unknown')}: {p.get('memory_percent', 0)}%" for p in mem_procs if p.get('memory_percent', 0) > 5])
+            if proc_details:
+                issue.explanation += f"\n\nTOP MEMORY CONSUMERS:\n{proc_details}"
+                causes.append("High memory consumption by specific processes")
+                evidence_level = EvidenceLevelEnum.CONFIRMED_BY_TELEMETRY
+            else:
+                causes.append("High-memory application (e.g. Browser, IDE)")
+                causes.append("Potential memory leak in active process")
+                evidence_level = EvidenceLevelEnum.POSSIBLE
         else:
-            causes.append("High-memory application (e.g. Browser, IDE)")
-            causes.append("Potential memory leak in active process")
-            evidence_level = EvidenceLevelEnum.POSSIBLE
+            process_counts = [t.process_count for t in telemetry_window if t.process_count is not None]
+            if process_counts and max(process_counts) > 200:
+                causes.append("Numerous background processes consuming RAM")
+                evidence_level = EvidenceLevelEnum.SUPPORTED
+            else:
+                causes.append("High-memory application (e.g. Browser, IDE)")
+                causes.append("Potential memory leak in active process")
+                evidence_level = EvidenceLevelEnum.POSSIBLE
             
     elif issue.issue_type == "DISK_CAPACITY_CRITICAL":
         causes.append("Large temporary files or application data")

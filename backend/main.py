@@ -59,7 +59,8 @@ async def add_request_id(request: Request, call_next):
         logger.error(f"{request_id} ERROR: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"error": {"code": "INTERNAL_SERVER_ERROR", "message": "An unexpected error occurred."}}
+            content={"error": {"code": "INTERNAL_SERVER_ERROR", "message": str(e)}},
+            headers={"Access-Control-Allow-Origin": "*"}
         )
 
 app.include_router(api_router, prefix="/api/v1")

@@ -1,5 +1,5 @@
 # Start PredictX Backend
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'd:\Desktop\PredictX'; .\.venv\Scripts\Activate.ps1; alembic upgrade head; uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'd:\Desktop\PredictX'; .\.venv\Scripts\Activate.ps1; alembic upgrade head; uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
 
 # Start PredictX Frontend
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'd:\Desktop\PredictX\frontend'; npm run dev"

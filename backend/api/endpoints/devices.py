@@ -31,6 +31,8 @@ def _enrich_device_with_prediction(db: Session, device) -> dict:
     out = {}
     for col in device.__table__.columns:
         out[col.name] = getattr(device, col.name)
+        
+    out["presence_status"] = device.presence_status
 
     health_data = calculate_health_and_risk(db, device.device_id)
     out["health_score"] = health_data["health_score"]
@@ -39,7 +41,7 @@ def _enrich_device_with_prediction(db: Session, device) -> dict:
     return out
 
 
-@router.post("/", response_model=DeviceOut)
+@router.post("", response_model=DeviceOut)
 def register_device(
     *,
     db: Session = Depends(get_db),
@@ -52,7 +54,7 @@ def register_device(
     return _enrich_device_with_prediction(db, device_repo.create(db, obj_in=device_in))
 
 
-@router.get("/", response_model=List[DeviceOut])
+@router.get("", response_model=List[DeviceOut])
 def get_devices(
     skip: int = 0,
     limit: int = 100,
@@ -151,3 +153,33 @@ def upsert_device_capability(
         db.commit()
         db.refresh(new_cap)
         return new_cap
+
+@router.get("/{device_id}/processes/top")
+def get_device_top_processes(
+    device_id: str,
+    sort: str = "cpu",
+    limit: int = 5,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """Get the top processes for a device from the latest telemetry sample."""
+    from backend.models.telemetry import TelemetrySample
+    
+    latest_telemetry = (
+        db.query(TelemetrySample)
+        .filter(TelemetrySample.device_id == device_id)
+        .order_by(TelemetrySample.timestamp_utc.desc())
+        .first()
+    )
+    
+    if not latest_telemetry or not latest_telemetry.top_processes:
+        return {"processes": [], "status": "unavailable"}
+        
+    processes = latest_telemetry.top_processes
+    
+    if sort == "cpu":
+        processes = sorted(processes, key=lambda x: x.get("cpu_percent", 0), reverse=True)
+    elif sort == "memory":
+        processes = sorted(processes, key=lambda x: x.get("memory_percent", 0), reverse=True)
+        
+    return {"processes": processes[:limit], "status": "available"}
