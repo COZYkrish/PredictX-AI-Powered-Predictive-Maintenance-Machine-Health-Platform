@@ -1,94 +1,142 @@
 'use client';
 
-import { Activity, Cpu, Monitor, Tag } from 'lucide-react';
+import { Monitor, Wifi, WifiOff, Clock } from 'lucide-react';
 import { useDeviceContext } from '@/hooks/use-device';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
+
+const RISK_COLORS: Record<string, string> = {
+  LOW: 'bg-green-100 text-green-800 border border-green-300',
+  MEDIUM: 'bg-yellow-100 text-yellow-800 border border-yellow-300',
+  HIGH: 'bg-orange-100 text-orange-800 border border-orange-300',
+  CRITICAL: 'bg-red-100 text-red-800 border border-red-300',
+};
 
 export default function DevicesPage() {
   const { devices, selectedDeviceId, setSelectedDeviceId, isLoading } = useDeviceContext();
-  const { user } = useAuth();
-
-  const getStatusColor = (health_score?: number) => {
-    if (health_score === undefined) return 'bg-neutral';
-    if (health_score >= 90) return 'bg-healthy text-primary-foreground';
-    if (health_score >= 70) return 'bg-warning text-primary-foreground';
-    if (health_score >= 40) return 'bg-high-risk text-primary-foreground';
-    return 'bg-critical text-primary-foreground';
-  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Devices</h2>
-          <p className="text-muted-foreground">
-            Manage and view all monitored Windows devices.
-          </p>
-        </div>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Devices</h2>
+        <p className="text-muted-foreground">
+          All Windows devices currently reporting telemetry.
+        </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Device Inventory</CardTitle>
-          <CardDescription>All agents currently reporting telemetry.</CardDescription>
+          <CardDescription>
+            {devices?.length ?? 0} device(s) found.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Hostname</TableHead>
-                  <TableHead>MAC Address</TableHead>
-                  <TableHead>OS Version</TableHead>
+                  <TableHead>Device</TableHead>
+                  <TableHead>Operating System</TableHead>
                   <TableHead>Architecture</TableHead>
-                  <TableHead>Health Score</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Health</TableHead>
+                  <TableHead>Last Seen</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       Loading devices...
                     </TableCell>
                   </TableRow>
                 ) : devices && devices.length > 0 ? (
-                  devices.map((device) => (
-                    <TableRow key={device.device_id} className={selectedDeviceId === device.device_id ? "bg-accent/50" : ""}>
+                  devices.map((device: any) => (
+                    <TableRow
+                      key={device.device_id}
+                      className={selectedDeviceId === device.device_id ? 'bg-accent/50' : ''}
+                    >
+                      {/* Device Name + hostname */}
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          <Monitor className="h-4 w-4 text-muted-foreground" />
-                          {device.hostname}
+                          <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="flex flex-col">
+                            <span>{device.hostname ?? 'Unknown'}</span>
+                            <span className="text-xs text-muted-foreground font-mono truncate max-w-[140px]">
+                              {device.device_id}
+                            </span>
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground font-mono text-xs">{(device as any).mac_address}</TableCell>
-                      <TableCell>{device.os_version}</TableCell>
-                      <TableCell>{device.architecture}</TableCell>
+
+                      {/* OS — os_version field */}
                       <TableCell>
-                        <Badge className={getStatusColor((device as any).health_score)}>
-                          {(device as any).health_score ? `${Math.round((device as any).health_score)}%` : 'N/A'}
-                        </Badge>
+                        <div className="flex flex-col">
+                          <span>{device.operating_system ?? 'N/A'}</span>
+                          {device.os_version && (
+                            <span className="text-xs text-muted-foreground">{device.os_version}</span>
+                          )}
+                        </div>
                       </TableCell>
+
+                      {/* Architecture */}
+                      <TableCell>
+                        {device.architecture ?? (
+                          <span className="text-xs text-muted-foreground">N/A</span>
+                        )}
+                      </TableCell>
+
+                      {/* Online Status */}
+                      <TableCell>
+                        {device.is_online ? (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <Wifi className="h-3.5 w-3.5" />
+                            <span className="text-xs font-medium">Online</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <WifiOff className="h-3.5 w-3.5" />
+                            <span className="text-xs">Offline</span>
+                          </div>
+                        )}
+                      </TableCell>
+
+                      {/* Health Score from latest prediction */}
+                      <TableCell>
+                        {device.health_score != null ? (
+                          <Badge
+                            variant="outline"
+                            className={RISK_COLORS[device.risk_level ?? 'LOW']}
+                          >
+                            {device.health_score}/100
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">NO_PREDICTION_YET</span>
+                        )}
+                      </TableCell>
+
+                      {/* Last Seen */}
+                      <TableCell>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {device.last_seen_at
+                            ? new Date(device.last_seen_at).toLocaleString()
+                            : 'Never'}
+                        </div>
+                      </TableCell>
+
+                      {/* Actions */}
                       <TableCell className="text-right">
-                        <Button 
-                          variant={selectedDeviceId === device.device_id ? "default" : "outline"}
+                        <Button
+                          variant={selectedDeviceId === device.device_id ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setSelectedDeviceId(device.device_id)}
                         >
@@ -99,7 +147,7 @@ export default function DevicesPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       No devices found. Install the PredictX Windows agent to get started.
                     </TableCell>
                   </TableRow>

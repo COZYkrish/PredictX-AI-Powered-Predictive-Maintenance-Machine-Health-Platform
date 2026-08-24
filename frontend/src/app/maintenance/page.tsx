@@ -132,10 +132,15 @@ export default function MaintenancePage() {
                 ) : records && records.length > 0 ? (
                   records.map((record) => (
                     <TableRow key={record.id}>
-                      <TableCell className="font-medium">{record.maintenance_type}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col">
+                          <span>{record.title}</span>
+                          <span className="text-xs text-muted-foreground">{record.priority ? `${record.priority} PRIORITY` : ''}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>{record.description}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {record.scheduled_date ? new Date(record.scheduled_date).toLocaleDateString() : 'TBD'}
+                        {record.scheduled_at ? new Date(record.scheduled_at).toLocaleDateString() : 'Unscheduled'}
                       </TableCell>
                       <TableCell>{getStatusBadge(record.status)}</TableCell>
                       <TableCell className="text-right">

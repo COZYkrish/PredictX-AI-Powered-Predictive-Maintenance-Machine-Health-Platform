@@ -32,6 +32,10 @@ class DeviceOut(DeviceCreate):
     is_online: bool
     is_active: bool
     status: str
+    # Populated from latest prediction
+    health_score: Optional[int] = None
+    risk_level: Optional[str] = None
+    last_prediction_at: Optional[datetime] = None
     
     model_config = {"from_attributes": True}
 

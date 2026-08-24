@@ -1,0 +1,13 @@
+- [x] P0.1 Fix API ML endpoint loading error
+- [x] P0.2 Implement Feature Builder for ML Model
+- [x] P0.3 Update Prediction Worker to use Feature Builder and broadcast correctly
+- [x] P0.4 Fix Predictions API endpoints (add history and on-demand trigger)
+- [x] P0.5 Fix Device Schema and endpoints to show health score from prediction
+- [x] P1.1 Create rule-based Issue Detector
+- [x] P1.2 Fix Alert Service to use Issue Detector recommendations and deduplicate
+- [x] P1.3 Add backend Maintenance API endpoints
+- [x] P1.4 Update agent_sync.py to send capabilities based on telemetry
+- [x] P1.5 Update Dashboard Frontend
+- [x] P1.6 Update Predict Frontend
+- [x] P1.7 Update Analytics, Alerts, and Maintenance Frontends
+- [x] Implement CLI ml.diagnose command
