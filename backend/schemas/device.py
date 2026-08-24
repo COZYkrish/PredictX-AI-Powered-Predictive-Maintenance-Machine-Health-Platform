@@ -30,6 +30,7 @@ class DeviceOut(DeviceCreate):
     first_seen_at: datetime
     last_seen_at: Optional[datetime] = None
     is_online: bool
+    presence_status: str
     is_active: bool
     status: str
     # Populated from latest prediction

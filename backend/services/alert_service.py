@@ -1,37 +1,27 @@
-"""
-Alert Service — creates descriptive, deduplicated alerts from real prediction+issue data.
-
-Changes from original:
-- Alert message contains actual metric, observed value, and recommendation.
-- Deduplication: one active alert per (device_id, alert_type). On resolution
-  the alert is marked RESOLVED; a new alert is created only when the condition
-  reappears after resolution.
-- Calls issue_detector to extract structured issues from telemetry.
-"""
-
 import logging
+import uuid
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
+from typing import List
 
 from backend.models.prediction import Prediction
 from backend.models.telemetry import TelemetrySample
-from backend.repositories.alert import alert as alert_repo
-from backend.repositories.alert import AlertCreate
-from backend.config import settings
+from backend.models.issue import Issue, IssueStatusEnum
+from backend.models.alert import Alert, AlertStatusEnum
+from backend.models.maintenance import MaintenanceRecord, MaintenanceStatusEnum
 from backend.services.issue_detector import detect_issues, DetectedIssue
-from typing import List
+from backend.services.issue_investigator import investigate_issue
+from backend.services.recommendation_engine import generate_recommendation
 
 logger = logging.getLogger(__name__)
 
 _SEVERITY_RANK = {"INFO": 0, "WARNING": 1, "HIGH": 2, "CRITICAL": 3}
 
-
 def evaluate_prediction_for_alerts(db: Session, prediction: Prediction):
     """
     Main entry point called by prediction_worker after a successful inference.
-    Fetches recent telemetry, runs issue detection, and creates/updates alerts.
+    Fetches recent telemetry, runs issue detection, and creates/updates issues and alerts.
     """
-    # ── Fetch latest + window telemetry for duration calculation ──────────────
     latest = (
         db.query(TelemetrySample)
         .filter(TelemetrySample.device_id == prediction.device_id)
@@ -39,7 +29,6 @@ def evaluate_prediction_for_alerts(db: Session, prediction: Prediction):
         .first()
     )
     if not latest:
-        logger.warning(f"No telemetry found for alert evaluation on {prediction.device_id}")
         return
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=10)
@@ -53,59 +42,105 @@ def evaluate_prediction_for_alerts(db: Session, prediction: Prediction):
         .all()
     )
 
-    # ── Detect issues ─────────────────────────────────────────────────────────
-    issues: List[DetectedIssue] = detect_issues(
+    # 1. Detect raw issues
+    detected_issues: List[DetectedIssue] = detect_issues(
         device_id=prediction.device_id,
         latest_telemetry=latest,
         prediction=prediction,
         recent_telemetry_window=window,
     )
 
-    # ── Create/deduplicate alerts ─────────────────────────────────────────────
-    for issue in issues:
-        # Skip INFO-level issues — they don't warrant alerts
-        if issue.severity == "INFO":
+    active_fingerprints = set()
+
+    # 2. Process each detected issue
+    for d_issue in detected_issues:
+        if d_issue.severity == "INFO":
             continue
 
-        alert_type = issue.issue_type
+        fingerprint = (d_issue.device_id, d_issue.issue_type, d_issue.condition_band)
+        active_fingerprints.add(fingerprint)
 
-        active = alert_repo.get_active_for_device(
-            db, device_id=prediction.device_id, alert_type=alert_type
-        )
-        if active:
-            # Condition is still present — don't duplicate
-            # Optionally update severity if it escalated
-            if _SEVERITY_RANK.get(issue.severity, 0) > _SEVERITY_RANK.get(active.severity, 0):
-                active.severity = issue.severity
-                active.message = _build_message(issue)
-                db.commit()
-                logger.info(f"Alert {active.id} escalated to {issue.severity}")
-            continue
-
-        # Create new alert
-        alert_in = AlertCreate(
-            device_id=prediction.device_id,
-            prediction_id=prediction.id,
-            alert_type=alert_type,
-            severity=issue.severity,
-            title=_build_title(issue),
-            message=_build_message(issue),
-        )
-        new_alert = alert_repo.create(db, obj_in=alert_in)
-        logger.info(
-            f"Alert created: {new_alert.id} type={alert_type} "
-            f"severity={issue.severity} device={prediction.device_id}"
+        # Check for existing active issue
+        existing_issue = (
+            db.query(Issue)
+            .filter(
+                Issue.device_id == d_issue.device_id,
+                Issue.issue_type == d_issue.issue_type,
+                Issue.condition_band == d_issue.condition_band,
+                Issue.status.in_([
+                    IssueStatusEnum.DETECTED,
+                    IssueStatusEnum.INVESTIGATING,
+                    IssueStatusEnum.ACTION_REQUIRED,
+                    IssueStatusEnum.VERIFYING,
+                    IssueStatusEnum.PERSISTING,
+                    IssueStatusEnum.ESCALATED
+                ])
+            )
+            .first()
         )
 
-        # Generate Maintenance Record from alert
-        _generate_maintenance_record(db, new_alert, issue)
+        if existing_issue:
+            # Update existing issue
+            existing_issue.current_value = d_issue.observed_value
+            existing_issue.duration_seconds = d_issue.duration_seconds
+            existing_issue.updated_at = datetime.now(timezone.utc)
+            
+            # Escalate severity if needed
+            if _SEVERITY_RANK.get(d_issue.severity, 0) > _SEVERITY_RANK.get(existing_issue.severity.value if hasattr(existing_issue.severity, 'value') else existing_issue.severity, 0):
+                existing_issue.severity = d_issue.severity
+                
+            db.commit()
+        else:
+            # Create new issue
+            new_issue = Issue(
+                id=str(uuid.uuid4()),
+                device_id=d_issue.device_id,
+                issue_type=d_issue.issue_type,
+                condition_band=d_issue.condition_band,
+                severity=d_issue.severity,
+                status=IssueStatusEnum.DETECTED,
+                detected_at=d_issue.detected_at,
+                current_value=d_issue.observed_value,
+                threshold=d_issue.threshold,
+                duration_seconds=d_issue.duration_seconds,
+                explanation=d_issue.explanation,
+                prediction_id=prediction.id,
+                source_type="ML_PREDICTION" if d_issue.issue_type in ["ANOMALY_DETECTED", "ABNORMAL_SYSTEM_BEHAVIOR"] else "TELEMETRY",
+                source_id=prediction.id
+            )
+            db.add(new_issue)
+            db.commit()
+            db.refresh(new_issue)
+            
+            # Run investigation and recommendations
+            investigate_issue(db, new_issue, window)
+            generate_recommendation(db, new_issue)
+            
+            new_issue.status = IssueStatusEnum.ACTION_REQUIRED
+            db.commit()
+            
+            # Create Alert
+            alert = Alert(
+                id=str(uuid.uuid4()),
+                device_id=new_issue.device_id,
+                issue_id=new_issue.id,
+                prediction_id=prediction.id,
+                alert_type=new_issue.issue_type,
+                severity=new_issue.severity,
+                title=_build_title(new_issue),
+                message=new_issue.explanation,
+                status=AlertStatusEnum.OPEN
+            )
+            db.add(alert)
+            db.commit()
+            
+            # Create Maintenance Record
+            _generate_maintenance_record(db, alert, new_issue)
 
-    # ── Resolve alerts for issues that are no longer present ─────────────────
-    active_issue_types = {i.issue_type for i in issues}
-    _resolve_cleared_alerts(db, prediction.device_id, active_issue_types)
+    # 3. Auto-resolve issues that are no longer detected (unless in VERIFYING state)
+    _resolve_cleared_issues(db, prediction.device_id, active_fingerprints)
 
-
-def _build_title(issue: DetectedIssue) -> str:
+def _build_title(issue: Issue) -> str:
     titles = {
         "HIGH_CPU_USAGE": "High CPU Utilization",
         "MEMORY_PRESSURE": "Memory Pressure",
@@ -119,28 +154,7 @@ def _build_title(issue: DetectedIssue) -> str:
     }
     return titles.get(issue.issue_type, issue.issue_type.replace("_", " ").title())
 
-
-def _build_message(issue: DetectedIssue) -> str:
-    duration_str = ""
-    if issue.duration_seconds > 60:
-        mins = issue.duration_seconds // 60
-        duration_str = f" sustained for ~{mins} minute{'s' if mins != 1 else ''}"
-    elif issue.duration_seconds > 0:
-        duration_str = f" sustained for ~{issue.duration_seconds}s"
-
-    return (
-        f"{issue.explanation}"
-        f"{' Observed: ' + str(issue.observed_value) + '% (threshold: ' + str(issue.threshold) + '%)' if issue.threshold > 0 else ''}"
-        f"{duration_str}. "
-        f"Recommendation: {issue.recommendation}"
-    )
-
-
-def _generate_maintenance_record(db: Session, alert, issue: DetectedIssue):
-    """Automatically create a maintenance record based on the alert."""
-    from backend.models.maintenance import MaintenanceRecord, MaintenanceStatusEnum
-    import uuid
-    
+def _generate_maintenance_record(db: Session, alert: Alert, issue: Issue):
     priority_map = {
         "CRITICAL": "HIGH",
         "HIGH": "HIGH",
@@ -148,35 +162,46 @@ def _generate_maintenance_record(db: Session, alert, issue: DetectedIssue):
         "INFO": "LOW"
     }
     
+    sev = issue.severity.value if hasattr(issue.severity, 'value') else issue.severity
     new_record = MaintenanceRecord(
         id=str(uuid.uuid4()),
-        device_id=alert.device_id,
+        device_id=issue.device_id,
+        issue_id=issue.id,
         alert_id=alert.id,
         title=f"Maintenance Required: {_build_title(issue)}",
-        description=issue.recommendation,
-        priority=priority_map.get(issue.severity, "MEDIUM"),
+        description=issue.recommendation or "Requires investigation.",
+        priority=priority_map.get(sev, "MEDIUM"),
         status=MaintenanceStatusEnum.RECOMMENDED
     )
     db.add(new_record)
     db.commit()
 
-
-def _resolve_cleared_alerts(
-    db: Session, device_id: str, active_issue_types: set
-):
-    """Mark as RESOLVED any open alerts for conditions that no longer exist."""
-    from backend.models.alert import Alert
-    open_alerts = (
-        db.query(Alert)
+def _resolve_cleared_issues(db: Session, device_id: str, active_fingerprints: set):
+    open_issues = (
+        db.query(Issue)
         .filter(
-            Alert.device_id == device_id,
-            Alert.status == "OPEN",
+            Issue.device_id == device_id,
+            Issue.status.in_([
+                IssueStatusEnum.DETECTED,
+                IssueStatusEnum.INVESTIGATING,
+                IssueStatusEnum.ACTION_REQUIRED,
+                IssueStatusEnum.PERSISTING,
+                IssueStatusEnum.ESCALATED
+            ])
         )
         .all()
     )
-    for alert in open_alerts:
-        if alert.alert_type not in active_issue_types:
-            alert.status = "RESOLVED"
-            alert.resolved_at = datetime.now(timezone.utc)
-            logger.info(f"Alert {alert.id} RESOLVED (condition cleared)")
+    
+    for issue in open_issues:
+        fingerprint = (issue.device_id, issue.issue_type, issue.condition_band)
+        if fingerprint not in active_fingerprints:
+            issue.status = IssueStatusEnum.RESOLVED
+            issue.resolved_at = datetime.now(timezone.utc)
+            
+            # Resolve related alerts
+            alerts = db.query(Alert).filter(Alert.issue_id == issue.id, Alert.status == AlertStatusEnum.OPEN).all()
+            for a in alerts:
+                a.status = AlertStatusEnum.RESOLVED
+                a.resolved_at = datetime.now(timezone.utc)
+                
     db.commit()

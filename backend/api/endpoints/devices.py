@@ -24,21 +24,18 @@ class CapabilityIn(BaseModel):
     reason: Optional[str] = None
 
 
+from backend.services.health_engine import calculate_health_and_risk
+
 def _enrich_device_with_prediction(db: Session, device) -> dict:
-    """Add health_score and risk_level from the device's most recent prediction."""
+    """Add health_score and risk_level from the health engine."""
     out = {}
     for col in device.__table__.columns:
         out[col.name] = getattr(device, col.name)
 
-    latest_pred = (
-        db.query(Prediction)
-        .filter(Prediction.device_id == device.device_id)
-        .order_by(Prediction.timestamp_utc.desc())
-        .first()
-    )
-    out["health_score"] = latest_pred.health_score if latest_pred else None
-    out["risk_level"] = latest_pred.risk_level if latest_pred else None
-    out["last_prediction_at"] = latest_pred.timestamp_utc if latest_pred else None
+    health_data = calculate_health_and_risk(db, device.device_id)
+    out["health_score"] = health_data["health_score"]
+    out["risk_level"] = health_data["risk_level"]
+    out["last_prediction_at"] = health_data["last_prediction_at"]
     return out
 
 

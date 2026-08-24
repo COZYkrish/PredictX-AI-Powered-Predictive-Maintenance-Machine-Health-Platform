@@ -33,6 +33,7 @@ THRESHOLDS = {
 @dataclass
 class DetectedIssue:
     issue_type: str
+    condition_band: str           # e.g., HIGH, WARNING, CRITICAL
     severity: str                 # INFO | WARNING | HIGH | CRITICAL
     device_id: str
     detected_at: datetime
@@ -42,7 +43,7 @@ class DetectedIssue:
     duration_seconds: int         # approx duration condition was sustained
     explanation: str
     recommendation: str
-    status: str = "OPEN"         # OPEN | RESOLVED
+    status: str = "DETECTED"         # DETECTED | RESOLVED
 
 
 def detect_issues(
@@ -94,6 +95,7 @@ def detect_issues(
     ) -> DetectedIssue:
         return DetectedIssue(
             issue_type=issue_type,
+            condition_band=severity,
             severity=severity,
             device_id=device_id,
             detected_at=now,

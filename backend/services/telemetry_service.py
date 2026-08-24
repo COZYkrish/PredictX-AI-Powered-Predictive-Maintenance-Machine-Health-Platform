@@ -6,6 +6,7 @@ from backend.repositories.telemetry import telemetry as telemetry_repo
 from backend.repositories.prediction import prediction_job as prediction_job_repo
 from backend.repositories.prediction import PredictionJobCreate
 from backend.services.prediction_worker import process_prediction_job
+from backend.services.resolution_service import evaluate_verifying_issues
 from backend.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
@@ -40,8 +41,11 @@ def process_telemetry_batch(
                 continue
                 
             # Store telemetry
-            telemetry_repo.create(db, obj_in=sample)
+            db_sample = telemetry_repo.create(db, obj_in=sample)
             accepted += 1
+            
+            # Evaluate verification logic
+            evaluate_verifying_issues(db, sample.device_id, db_sample)
             
             # Create Prediction Job
             job_in = PredictionJobCreate(

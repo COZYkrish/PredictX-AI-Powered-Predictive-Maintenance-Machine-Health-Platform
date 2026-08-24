@@ -26,3 +26,19 @@ class Device(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    @property
+    def presence_status(self) -> str:
+        if not self.last_seen_at:
+            return "OFFLINE"
+            
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        diff_seconds = (now - self.last_seen_at).total_seconds()
+        
+        if diff_seconds <= 60:
+            return "ONLINE"
+        elif diff_seconds <= 600:
+            return "STALE"
+        else:
+            return "OFFLINE"
