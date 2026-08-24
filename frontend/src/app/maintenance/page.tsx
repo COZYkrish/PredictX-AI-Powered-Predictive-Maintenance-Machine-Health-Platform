@@ -25,8 +25,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useState } from 'react';
 
-type MaintenanceRecordOut = components['schemas']['MaintenanceRecordOut'];
-type MaintenanceRecordCreate = components['schemas']['MaintenanceRecordCreate'];
+type MaintenanceRecordOut = any;
+type MaintenanceRecordCreate = any;
 
 export default function MaintenancePage() {
   const { selectedDeviceId, selectedDevice } = useDeviceContext();

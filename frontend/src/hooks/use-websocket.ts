@@ -6,16 +6,16 @@ import { useAuth } from './use-auth';
 
 type WebSocketStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
-export function useWebsocket(endpoint: string = '/ws/dashboard') {
+export function useWebsocket(endpoint?: string) {
   const [status, setStatus] = useState<WebSocketStatus>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
 
   const connect = useCallback(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !endpoint) return;
     
     try {
       setStatus(reconnectAttemptsRef.current > 0 ? 'reconnecting' : 'connecting');

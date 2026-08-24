@@ -16,12 +16,13 @@ import { Badge } from '@/components/ui/badge';
 import { Activity, Cpu, HardDrive, MemoryStick } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type Telemetry = components['schemas']['TelemetryOut'];
-type Device = components['schemas']['DeviceOut'];
+type Telemetry = any;
+type Device = components['schemas']['DeviceOut'] & { health_score?: number; capabilities?: Record<string, boolean> };
 
 export default function DashboardPage() {
   const { selectedDeviceId, selectedDevice } = useDeviceContext();
-  const { status: wsStatus } = useWebsocket(selectedDeviceId ? `/ws/devices/${selectedDeviceId}` : undefined);
+  
+  const { status: wsStatus } = useWebsocket(selectedDeviceId ? `/api/v1/ws/devices/${selectedDeviceId}` : undefined);
 
   const { data: telemetry, isLoading: telemetryLoading } = useQuery({
     queryKey: ['telemetry', selectedDeviceId],
@@ -32,6 +33,7 @@ export default function DashboardPage() {
       return res.data[0] || null;
     },
     enabled: !!selectedDeviceId,
+    refetchInterval: wsStatus === 'connected' ? false : 5000 // Fallback polling if WS fails
   });
 
   if (!selectedDeviceId) {
@@ -58,7 +60,7 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{selectedDevice?.hostname}</h2>
           <p className="text-muted-foreground">
-            {selectedDevice?.os_version} | {selectedDevice?.cpu_architecture}
+            {selectedDevice?.os_version} | {selectedDevice?.architecture}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -68,8 +70,8 @@ export default function DashboardPage() {
               {wsStatus === 'connected' ? 'Live' : 'Disconnected'}
             </span>
           </Badge>
-          <Badge className={getStatusColor(selectedDevice?.health_score)}>
-            Health: {selectedDevice?.health_score ? `${Math.round(selectedDevice.health_score)}%` : 'N/A'}
+          <Badge className={getStatusColor((selectedDevice as any)?.health_score)}>
+            Health: {(selectedDevice as any)?.health_score ? `${Math.round((selectedDevice as any).health_score)}%` : 'N/A'}
           </Badge>
         </div>
       </div>
@@ -192,7 +194,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {selectedDevice?.capabilities && Object.entries(selectedDevice.capabilities).map(([key, value]) => (
+              {(selectedDevice as any)?.capabilities && Object.entries((selectedDevice as any).capabilities).map(([key, value]) => (
                 <Badge key={key} variant={value ? 'outline' : 'secondary'} className={value ? 'border-healthy text-healthy' : 'opacity-50'}>
                   {key}
                 </Badge>

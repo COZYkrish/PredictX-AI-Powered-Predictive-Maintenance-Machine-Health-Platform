@@ -1,0 +1,12 @@
+{
+  "project": "PredictX",
+  "version": "1.0.0",
+  "frontend_version": "1.0.0",
+  "backend_version": "1.0.0",
+  "agent_version": "1.0.0",
+  "ml_model_version": "1.0.0",
+  "schema_version": "1.0",
+  "feature_version": "1.0",
+  "build_timestamp_utc": "2026-08-23T15:30:54.188613",
+  "git_commit": "25f7a45eba1530da0c0939f8ef572f8a6f1ac2e6"
+}

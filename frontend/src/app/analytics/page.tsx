@@ -23,7 +23,7 @@ import {
   Legend
 } from 'recharts';
 
-type TelemetryOut = components['schemas']['TelemetryOut'];
+type TelemetryOut = any;
 
 export default function AnalyticsPage() {
   const { selectedDeviceId, selectedDevice } = useDeviceContext();
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
                       type="monotone" 
                       dataKey="cpu_percent" 
                       name="CPU (%)" 
-                      stroke="hsl(var(--primary))" 
+                      stroke="#0ea5e9" 
                       strokeWidth={2} 
                       dot={false}
                       activeDot={{ r: 6 }} 
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
                       type="monotone" 
                       dataKey="memory_percent" 
                       name="Memory (%)" 
-                      stroke="hsl(var(--healthy))" 
+                      stroke="#10b981" 
                       strokeWidth={2} 
                       dot={false} 
                     />

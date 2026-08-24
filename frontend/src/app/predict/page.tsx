@@ -19,7 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
-type PredictionOut = components['schemas']['PredictionOut'];
+type PredictionOut = any;
 
 export default function PredictPage() {
   const { selectedDeviceId, selectedDevice } = useDeviceContext();

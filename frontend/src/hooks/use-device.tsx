@@ -39,10 +39,10 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
           
           // Initialize selection from localStorage or pick first
           const savedId = localStorage.getItem('predictx_selected_device');
-          if (savedId && res.data.some(d => d.id === savedId)) {
+          if (savedId && res.data.some(d => d.device_id === savedId)) {
             setSelectedDeviceIdState(savedId);
           } else if (res.data.length > 0) {
-            setSelectedDeviceIdState(res.data[0].id);
+            setSelectedDeviceIdState(res.data[0].device_id);
           }
         }
       } catch (err) {
@@ -64,7 +64,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('predictx_selected_device', id);
   };
 
-  const selectedDevice = devices.find(d => d.id === selectedDeviceId) || null;
+  const selectedDevice = devices.find(d => d.device_id === selectedDeviceId) || null;
 
   return (
     <DeviceContext.Provider value={{

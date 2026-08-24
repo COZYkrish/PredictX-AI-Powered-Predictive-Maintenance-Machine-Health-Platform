@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
+import hashlib
 from sklearn.pipeline import Pipeline
 import pandas as pd
 
@@ -114,21 +115,39 @@ def train_pipeline(df: pd.DataFrame, target_col: str = 'proxy_health_label'):
     
     model_version = "v1.0.0"
     model_filename = f"system_health_{best_model_name.lower()}_{model_version}.joblib"
-    joblib.dump(full_pipeline, MODELS_DIR / model_filename)
+    model_path = MODELS_DIR / model_filename
+    joblib.dump(full_pipeline, model_path)
+    
+    # Generate hash
+    sha256_hash = hashlib.sha256()
+    with open(model_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
     
     # Save Metadata
     metadata = {
         "model_name": best_model_name,
         "model_version": model_version,
         "feature_version": "1.0",
+        "schema_version": "1.0",
+        "label_version": "1.0",
+        "dataset_version": "1.0",
         "training_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "Python_version": "3.11",
+        "package_versions": {"scikit-learn": "1.3.0", "pandas": "2.0.0"},
         "feature_count": len(feature_cols),
         "features": feature_cols,
         "metrics": metrics_report[best_model_name],
-        "prediction_threshold": 0.5
+        "prediction_threshold": 0.5,
+        "artifacts": [
+            {
+                "filename": model_filename,
+                "sha256": sha256_hash.hexdigest()
+            }
+        ]
     }
     
-    with open(MODELS_DIR / f"metadata_{model_version}.json", "w") as f:
+    with open(MODELS_DIR / "metadata.json", "w") as f:
         json.dump(metadata, f, indent=2)
         
     with open(ARTIFACTS_DIR / "feature_metadata" / "feature_schema.json", "w") as f:

@@ -1,0 +1,14 @@
+name: PredictX CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-checks:
+    uses: ./.github/workflows/backend.yml
+  
+  frontend-checks:
+    uses: ./.github/workflows/frontend.yml

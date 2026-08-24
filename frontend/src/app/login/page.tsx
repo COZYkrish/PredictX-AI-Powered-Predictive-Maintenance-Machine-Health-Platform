@@ -42,7 +42,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await login(values);
+      await login(values as any);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {

@@ -71,28 +71,28 @@ export default function DevicesPage() {
                   </TableRow>
                 ) : devices && devices.length > 0 ? (
                   devices.map((device) => (
-                    <TableRow key={device.id} className={selectedDeviceId === device.id ? "bg-accent/50" : ""}>
+                    <TableRow key={device.device_id} className={selectedDeviceId === device.device_id ? "bg-accent/50" : ""}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <Monitor className="h-4 w-4 text-muted-foreground" />
                           {device.hostname}
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground font-mono text-xs">{device.mac_address}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-xs">{(device as any).mac_address}</TableCell>
                       <TableCell>{device.os_version}</TableCell>
-                      <TableCell>{device.cpu_architecture}</TableCell>
+                      <TableCell>{device.architecture}</TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(device.health_score)}>
-                          {device.health_score ? `${Math.round(device.health_score)}%` : 'N/A'}
+                        <Badge className={getStatusColor((device as any).health_score)}>
+                          {(device as any).health_score ? `${Math.round((device as any).health_score)}%` : 'N/A'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button 
-                          variant={selectedDeviceId === device.id ? "default" : "outline"}
+                          variant={selectedDeviceId === device.device_id ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setSelectedDeviceId(device.id)}
+                          onClick={() => setSelectedDeviceId(device.device_id)}
                         >
-                          {selectedDeviceId === device.id ? 'Selected' : 'Select'}
+                          {selectedDeviceId === device.device_id ? 'Selected' : 'Select'}
                         </Button>
                       </TableCell>
                     </TableRow>

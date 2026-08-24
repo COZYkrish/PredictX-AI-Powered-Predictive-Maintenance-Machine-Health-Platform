@@ -1,0 +1,87 @@
+{
+  "model_name": "MajorityBaseline",
+  "model_version": "v1.0.0",
+  "feature_version": "1.0",
+  "schema_version": "1.0",
+  "label_version": "1.0",
+  "dataset_version": "1.0",
+  "training_timestamp_utc": "2026-08-23T15:28:46.989807+00:00",
+  "Python_version": "3.11",
+  "package_versions": {
+    "scikit-learn": "1.3.0",
+    "pandas": "2.0.0"
+  },
+  "feature_count": 50,
+  "features": [
+    "id",
+    "collection_duration_ms",
+    "cpu_usage_percent",
+    "cpu_frequency_current_mhz",
+    "memory_percent",
+    "memory_used_bytes",
+    "memory_available_bytes",
+    "disk_usage_percent",
+    "disk_read_bytes_per_sec",
+    "disk_write_bytes_per_sec",
+    "network_upload_bytes_per_sec",
+    "network_download_bytes_per_sec",
+    "process_count",
+    "uptime_seconds",
+    "battery_percent",
+    "delta_cpu_usage_percent",
+    "delta_memory_percent",
+    "delta_disk_usage_percent",
+    "delta_network_upload_bytes_per_sec",
+    "delta_network_download_bytes_per_sec",
+    "cpu_usage_percent_30s_mean",
+    "cpu_usage_percent_30s_max",
+    "cpu_usage_percent_30s_std",
+    "memory_percent_30s_mean",
+    "memory_percent_30s_max",
+    "memory_percent_30s_std",
+    "disk_usage_percent_30s_mean",
+    "disk_usage_percent_30s_max",
+    "disk_usage_percent_30s_std",
+    "network_upload_bytes_per_sec_30s_mean",
+    "network_upload_bytes_per_sec_30s_max",
+    "network_upload_bytes_per_sec_30s_std",
+    "network_download_bytes_per_sec_30s_mean",
+    "network_download_bytes_per_sec_30s_max",
+    "network_download_bytes_per_sec_30s_std",
+    "cpu_usage_percent_60s_mean",
+    "cpu_usage_percent_60s_max",
+    "cpu_usage_percent_60s_std",
+    "memory_percent_60s_mean",
+    "memory_percent_60s_max",
+    "memory_percent_60s_std",
+    "disk_usage_percent_60s_mean",
+    "disk_usage_percent_60s_max",
+    "disk_usage_percent_60s_std",
+    "network_upload_bytes_per_sec_60s_mean",
+    "network_upload_bytes_per_sec_60s_max",
+    "network_upload_bytes_per_sec_60s_std",
+    "network_download_bytes_per_sec_60s_mean",
+    "network_download_bytes_per_sec_60s_max",
+    "network_download_bytes_per_sec_60s_std"
+  ],
+  "metrics": {
+    "accuracy": 1.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": NaN,
+    "pr_auc": 0.0,
+    "confusion_matrix": [
+      [
+        57
+      ]
+    ]
+  },
+  "prediction_threshold": 0.5,
+  "artifacts": [
+    {
+      "filename": "system_health_majoritybaseline_v1.0.0.joblib",
+      "sha256": "0efc5eb142d1e86a2515851138220a3f604985ac179c9428c43d106c27529e0d"
+    }
+  ]
+}

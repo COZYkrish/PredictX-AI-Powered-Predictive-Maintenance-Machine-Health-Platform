@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useState } from 'react';
 
-type AlertOut = components['schemas']['AlertOut'];
+type AlertOut = components['schemas']['AlertOut'] & { is_acknowledged?: boolean };
 
 export default function AlertsPage() {
   const { selectedDeviceId, selectedDevice } = useDeviceContext();
@@ -133,7 +133,7 @@ export default function AlertsPage() {
                         {new Date(alert.created_at).toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        {alert.is_acknowledged ? (
+                        {alert.acknowledged_at ? (
                           <span className="flex items-center text-xs text-healthy">
                             <CheckCircle className="mr-1 h-3 w-3" /> Acknowledged
                           </span>
@@ -144,7 +144,7 @@ export default function AlertsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {!alert.is_acknowledged && canAck && (
+                        {!alert.acknowledged_at && canAck && (
                           <Button 
                             variant="outline" 
                             size="sm"

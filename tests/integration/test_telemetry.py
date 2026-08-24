@@ -30,6 +30,17 @@ def test_telemetry_batch_upload_unauthorized(client):
     assert data["duplicates"] == 0
 
 def test_telemetry_batch_idempotent(client):
+    # Setup test device
+    client.post("/api/v1/auth/register", json={"email": "tel2@test.com", "password": "pass"})
+    resp = client.post("/api/v1/auth/login", data={"username": "tel2@test.com", "password": "pass"})
+    token = resp.json()["access_token"]
+    
+    client.post(
+        "/api/v1/devices/",
+        json={"device_id": "TEST-001", "hostname": "Test-PC"},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    
     payload = {
         "samples": [
             {

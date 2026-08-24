@@ -17,6 +17,12 @@ class DeviceCreate(BaseModel):
 class DeviceUpdate(BaseModel):
     display_name: Optional[str] = None
     is_active: Optional[bool] = None
+    hostname: Optional[str] = None
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
+    operating_system: Optional[str] = None
+    os_version: Optional[str] = None
+    architecture: Optional[str] = None
 
 class DeviceOut(DeviceCreate):
     id: str

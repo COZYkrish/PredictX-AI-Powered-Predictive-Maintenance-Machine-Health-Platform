@@ -21,6 +21,17 @@ def register_device(
         raise HTTPException(status_code=400, detail="Device already registered")
     return device_repo.create(db, obj_in=device_in)
 
+@router.get("/", response_model=list[DeviceOut])
+def get_devices(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    # In a full system, filter by user access
+    devices = device_repo.get_multi(db, skip=skip, limit=limit)
+    return devices
+
 @router.get("/{device_id}", response_model=DeviceOut)
 def get_device(
     device_id: str,
@@ -32,3 +43,15 @@ def get_device(
     if not dev:
         raise HTTPException(status_code=404, detail="Device not found")
     return dev
+
+@router.put("/{device_id}", response_model=DeviceOut)
+def update_device(
+    device_id: str,
+    device_in: DeviceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    dev = device_repo.get_by_device_id(db, device_id=device_id)
+    if not dev:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return device_repo.update(db, db_obj=dev, obj_in=device_in)

@@ -12,7 +12,7 @@ export const authApi = {
       const params = new URLSearchParams();
       params.append('username', data.username);
       params.append('password', data.password);
-      params.append('grant_type', data.grant_type || 'password');
+      params.append('scope', '');
       
       const response = await apiClient.post<Token>('/api/v1/auth/login', params, {
         headers: {

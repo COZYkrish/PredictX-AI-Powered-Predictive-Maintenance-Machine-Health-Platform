@@ -50,12 +50,12 @@ export function DeviceSelector() {
         {devices.map((device) => (
           <DropdownMenuItem 
             key={device.id} 
-            onClick={() => setSelectedDeviceId(device.id)}
-            className={device.id === selectedDevice?.id ? 'bg-accent' : ''}
+            onClick={() => setSelectedDeviceId(device.device_id)}
+            className={device.device_id === selectedDevice?.device_id ? 'bg-accent' : ''}
           >
             <div className="flex flex-col">
               <span className="font-medium truncate">{device.hostname}</span>
-              <span className="text-xs text-muted-foreground truncate">{device.mac_address}</span>
+              <span className="text-xs text-muted-foreground truncate">{(device as any).mac_address}</span>
             </div>
           </DropdownMenuItem>
         ))}
