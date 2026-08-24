@@ -8,6 +8,7 @@ from .prediction_job import PredictionJob, JobStatusEnum
 from .prediction import Prediction
 from .alert import Alert, AlertStatusEnum, AlertSeverityEnum
 from .maintenance import MaintenanceRecord, MaintenanceStatusEnum
+from .issue import Issue
 
 __all__ = [
     "Base", "User", "RoleEnum", "Device", "UserDevice", "AccessRoleEnum",

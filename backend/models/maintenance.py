@@ -15,6 +15,7 @@ class MaintenanceRecord(Base):
 
     id = Column(String, primary_key=True, index=True)
     device_id = Column(String, ForeignKey("devices.device_id"), index=True, nullable=False)
+    issue_id = Column(String, ForeignKey("issues.id"), index=True, nullable=True)
     alert_id = Column(String, ForeignKey("alerts.id"))
     
     title = Column(String, nullable=False)
