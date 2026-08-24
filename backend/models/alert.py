@@ -20,6 +20,7 @@ class Alert(Base):
 
     id = Column(String, primary_key=True, index=True)
     device_id = Column(String, ForeignKey("devices.device_id"), index=True, nullable=False)
+    issue_id = Column(String, ForeignKey("issues.id"), index=True, nullable=True)
     prediction_id = Column(String, ForeignKey("predictions.id"))
     
     alert_type = Column(String, nullable=False)
