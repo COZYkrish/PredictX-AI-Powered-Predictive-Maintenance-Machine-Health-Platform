@@ -43,6 +43,9 @@ def process_telemetry_batch(
             # Store telemetry
             db_sample = telemetry_repo.create(db, obj_in=sample)
             accepted += 1
+
+            # ── FIX: Update device presence on every accepted sample ──────────
+            _update_device_presence(db, sample.device_id, db_sample.timestamp_utc)
             
             # Evaluate verification logic
             evaluate_verifying_issues(db, sample.device_id, db_sample)
@@ -70,3 +73,25 @@ def process_telemetry_batch(
         invalid=invalid,
         prediction_triggered=prediction_triggered
     )
+
+
+def _update_device_presence(db: Session, device_id: str, timestamp_utc) -> None:
+    """
+    Update device.last_seen_at and is_online whenever valid telemetry arrives.
+    This is the authoritative update — presence_status is derived from last_seen_at.
+    """
+    from backend.models.device import Device
+
+    device = db.query(Device).filter(Device.device_id == device_id).first()
+    if device is None:
+        logger.warning(f"Received telemetry for unknown device_id={device_id}, skipping presence update.")
+        return
+
+    device.last_seen_at = timestamp_utc
+    device.is_online = True  # Stamp online; presence_status property re-evaluates stale/offline
+
+    try:
+        db.commit()
+    except Exception as e:
+        logger.error(f"Failed to update device presence for {device_id}: {e}")
+        db.rollback()

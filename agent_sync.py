@@ -129,6 +129,7 @@ def _build_payload(sample, device_id: str) -> dict:
 
                 # System
                 "process_count": getattr(perf, "process_count", None),
+                "top_processes": getattr(perf, "top_processes", None),
                 "uptime_seconds": perf.uptime_seconds,
             }
         ]

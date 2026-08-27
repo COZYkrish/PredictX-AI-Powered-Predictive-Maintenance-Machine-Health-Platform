@@ -48,6 +48,37 @@ type Issue = {
   recommendation?: string;
 };
 
+type SystemState = {
+  health_score: number;
+  health_status: string;
+  health_factors: string[];
+  risk_level: string;
+  presence_status: string;
+  last_seen_at: string | null;
+  active_issue_count: number;
+  active_alert_count: number;
+  active_issues: Issue[];
+  recommended_action: string;
+  latest_prediction: {
+    prediction: string;
+    prediction_probability: number;
+    risk_level: string;
+    timestamp: string;
+  } | null;
+  anomaly: {
+    label: string;
+    score: number | null;
+    is_anomaly: boolean;
+  };
+  model: {
+    name: string;
+    version: string;
+    status: string;
+    is_baseline: boolean;
+    mode: string;
+  };
+};
+
 export default function DashboardPage() {
   const { selectedDeviceId, selectedDevice } = useDeviceContext();
   const router = useRouter();
@@ -102,6 +133,18 @@ export default function DashboardPage() {
     refetchInterval: 5000,
   });
 
+  // Single authoritative system state — drives all summary cards
+  const { data: systemState } = useQuery({
+    queryKey: ['system-state', selectedDeviceId],
+    queryFn: async () => {
+      if (!selectedDeviceId) return null;
+      const res = await apiClient.get<SystemState>(`/api/v1/devices/${selectedDeviceId}/state`);
+      return res.data;
+    },
+    enabled: !!selectedDeviceId,
+    refetchInterval: 5000,
+  });
+
   const { data: predictions } = useQuery({
     queryKey: ['predictions', selectedDeviceId],
     queryFn: async () => {
@@ -123,14 +166,18 @@ export default function DashboardPage() {
   }
 
   const latestPrediction = predictions?.[0];
-  const activeIssuesCount = issues?.length || 0;
-  const highestSeverityIssue = issues?.sort((a, b) => {
-    const rank = { CRITICAL: 3, HIGH: 2, WARNING: 1, INFO: 0 };
-    return rank[b.severity as keyof typeof rank] - rank[a.severity as keyof typeof rank];
+  // Use systemState for all summary card values — single source of truth
+  const activeIssuesCount = systemState?.active_issue_count ?? issues?.length ?? 0;
+  const activeAlertCount = systemState?.active_alert_count ?? 0;
+  const anomalyCount = systemState?.anomaly?.is_anomaly ? 1 : (issues?.filter(i => i.issue_type === 'ANOMALY_DETECTED').length || 0);
+  const healthScore = systemState?.health_score ?? selectedDevice.health_score ?? 100;
+  const riskLevel = systemState?.risk_level ?? selectedDevice.risk_level ?? 'UNKNOWN';
+  const recommendation = systemState?.recommended_action ?? null;
+  const activeIssues = systemState?.active_issues ?? issues ?? [];
+  const highestSeverityIssue = activeIssues.sort((a, b) => {
+    const rank: Record<string, number> = { CRITICAL: 3, HIGH: 2, WARNING: 1, INFO: 0 };
+    return (rank[b.severity] ?? 0) - (rank[a.severity] ?? 0);
   })[0];
-  
-  const anomalyCount = issues?.filter(i => i.issue_type === 'ANOMALY_DETECTED').length || 0;
-  const healthScore = selectedDevice.health_score ?? 100;
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">

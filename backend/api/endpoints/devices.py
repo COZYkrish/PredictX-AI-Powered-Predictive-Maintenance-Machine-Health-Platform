@@ -183,3 +183,41 @@ def get_device_top_processes(
         processes = sorted(processes, key=lambda x: x.get("memory_percent", 0), reverse=True)
         
     return {"processes": processes[:limit], "status": "available"}
+
+
+@router.get("/{device_id}/state")
+def get_device_state(
+    device_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Authoritative single-state snapshot for a device.
+    Dashboard, Devices page, and Analytics all derive from this endpoint.
+    """
+    from backend.services.system_state_service import get_device_system_state
+    try:
+        return get_device_system_state(db, device_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/{device_id}/state-debug")
+def get_device_state_debug(
+    device_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Admin-only deep trace of device state for debugging consistency.
+    Returns raw DB values alongside computed state.
+    """
+    from backend.models.user import RoleEnum
+    if current_user.role not in (RoleEnum.ADMIN, RoleEnum.ENGINEER):
+        raise HTTPException(status_code=403, detail="Admin/Engineer access required")
+
+    from backend.services.system_state_service import get_state_debug
+    try:
+        return get_state_debug(db, device_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

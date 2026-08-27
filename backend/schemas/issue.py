@@ -5,7 +5,7 @@ from datetime import datetime
 class IssueBase(BaseModel):
     device_id: str
     issue_type: str
-    condition_band: str
+    condition_band: Optional[str] = None   # Optional — anomaly/ML issues may omit this
     severity: str
     status: str
     current_value: Optional[float] = None
@@ -20,13 +20,13 @@ class IssueBase(BaseModel):
     verification_metric: Optional[str] = None
     verification_operator: Optional[str] = None
     verification_duration_seconds: Optional[int] = None
-    source_type: str
-    source_id: str
+    source_type: Optional[str] = None     # Optional — manually created issues lack provenance
+    source_id: Optional[str] = None       # Optional — manually created issues lack provenance
 
 class IssueOut(IssueBase):
     id: str
     detected_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None
     verification_started_at: Optional[datetime] = None
     verification_attempts: Optional[int] = None
