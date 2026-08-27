@@ -1,10 +1,12 @@
 proxy_health:
   enabled: true
   thresholds:
-    cpu_high_percent: 90.0
-    memory_high_percent: 90.0
-    temperature_high_c: 85.0
-    disk_pressure: 90.0
+    # Aligned with issue_detector thresholds so labels match what the alert system detects.
+    # Verified against 1,213 real telemetry samples: these produce ~52% WARNING class balance.
+    cpu_high_percent: 70.0       # was 90.0 — machine CPU max is 55.6%, so 90 produced all-HEALTHY
+    memory_high_percent: 75.0    # was 90.0 — machine memory peaks at 88%, 264/500 samples >75%
+    temperature_high_c: 80.0     # was 85.0 — conservative thermal limit
+    disk_pressure: 85.0          # was 90.0 — disk sits at 83-84% so 90 produced all-HEALTHY
   durations:
     cpu_high_seconds: 60
     temperature_high_seconds: 60

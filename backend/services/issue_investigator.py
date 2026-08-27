@@ -104,10 +104,70 @@ def investigate_issue(db: Session, issue: Issue, telemetry_window: List[Telemetr
         causes.append("Device unplugged with heavy workload")
         evidence_level = EvidenceLevelEnum.CONFIRMED_BY_TELEMETRY
         
-    elif issue.issue_type == "ANOMALY_DETECTED":
-        causes.append("Unusual workload pattern")
-        causes.append("Unexpected background task (e.g., update, backup)")
-        evidence_level = EvidenceLevelEnum.SUPPORTED
+    elif issue.issue_type in ("ANOMALY_DETECTED", "ABNORMAL_SYSTEM_BEHAVIOR"):
+        # Build causes from actual telemetry values at detection time
+        latest = telemetry_window[-1] if telemetry_window else None
+        if latest:
+            cpu = latest.cpu_usage_percent
+            mem = latest.memory_percent
+            disk = latest.disk_usage_percent
+
+            specific_causes = []
+            if cpu is not None and cpu > 70:
+                specific_causes.append(f"Elevated CPU usage at detection: {cpu:.1f}%")
+            if mem is not None and mem > 75:
+                specific_causes.append(f"Elevated memory usage at detection: {mem:.1f}%")
+            if disk is not None and disk > 85:
+                specific_causes.append(f"High disk usage at detection: {disk:.1f}%")
+
+            # Top processes
+            procs = getattr(latest, "top_processes", None) or []
+            cpu_procs = sorted(procs, key=lambda p: p.get("cpu_percent", 0), reverse=True)
+            mem_procs = sorted(procs, key=lambda p: p.get("memory_percent", 0), reverse=True)
+
+            heavy_cpu = [p for p in cpu_procs[:3] if p.get("cpu_percent", 0) > 5.0]
+            heavy_mem = [p for p in mem_procs[:3] if p.get("memory_percent", 0) > 3.0]
+
+            if heavy_cpu:
+                names = ", ".join(p.get("process_name", "Unknown") for p in heavy_cpu)
+                specific_causes.append(f"High-CPU processes at detection: {names}")
+            if heavy_mem:
+                names = ", ".join(p.get("process_name", "Unknown") for p in heavy_mem)
+                specific_causes.append(f"High-memory processes at detection: {names}")
+
+            if specific_causes:
+                causes.extend(specific_causes)
+                evidence_level = EvidenceLevelEnum.SUPPORTED
+
+                # Add telemetry snapshot to explanation
+                snap_lines = ["\n\nSYSTEM SNAPSHOT AT DETECTION:"]
+                if cpu is not None:
+                    snap_lines.append(f"CPU:    {cpu:.1f}%")
+                if mem is not None:
+                    snap_lines.append(f"Memory: {mem:.1f}%")
+                if disk is not None:
+                    snap_lines.append(f"Disk:   {disk:.1f}%")
+                if heavy_cpu:
+                    snap_lines.append("Top CPU: " + ", ".join(
+                        f"{p.get('process_name','?')} ({p.get('cpu_percent',0):.1f}%)" for p in heavy_cpu
+                    ))
+                if heavy_mem:
+                    snap_lines.append("Top RAM: " + ", ".join(
+                        f"{p.get('process_name','?')} ({p.get('memory_percent',0):.1f}%)" for p in heavy_mem
+                    ))
+                if issue.explanation:
+                    issue.explanation += "\n".join(snap_lines)
+                else:
+                    issue.explanation = "\n".join(snap_lines)
+            else:
+                # Metrics were all normal at detection — truly subtle anomaly
+                causes.append("Unusual pattern in combined metrics (subtle — no single metric spiked)")
+                causes.append("Possible brief workload burst that already subsided")
+                evidence_level = EvidenceLevelEnum.POSSIBLE
+        else:
+            causes.append("Unusual workload pattern")
+            causes.append("Unexpected background task (e.g., update, backup)")
+            evidence_level = EvidenceLevelEnum.SUPPORTED
         
     else:
         causes.append("System resource limits reached")

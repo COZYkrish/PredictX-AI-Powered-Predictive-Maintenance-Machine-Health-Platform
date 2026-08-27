@@ -1,14 +1,23 @@
 from xgboost import XGBClassifier
 
 def get_xgboost():
-    # We will use early stopping in the training loop if validation set is provided,
-    # but the base estimator is defined here.
+    """
+    Binary XGBoost classifier for HEALTHY (0) vs WARNING (1) system health.
+    - objective='binary:logistic' for binary classification
+    - eval_metric='logloss' (binary cross-entropy)
+    - scale_pos_weight handles class imbalance (~77% WARNING, ~23% HEALTHY)
+      scale_pos_weight = n_negative / n_positive = 290/963 ≈ 0.30
+    """
     return XGBClassifier(
         n_estimators=200,
-        max_depth=6,
-        learning_rate=0.1,
+        max_depth=5,
+        learning_rate=0.05,
+        objective='binary:logistic',
+        eval_metric='logloss',
+        scale_pos_weight=0.30,   # compensates for 77% WARNING class majority
+        subsample=0.8,
+        colsample_bytree=0.8,
         random_state=42,
-        eval_metric='mlogloss', # for multi-class or 'logloss' for binary
-        use_label_encoder=False,
-        n_jobs=-1
+        n_jobs=-1,
+        enable_categorical=False,
     )

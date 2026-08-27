@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Activity, Clock } from 'lucide-react';
+import { Activity, Clock, Brain, BarChart2, CheckCircle, TrendingUp } from 'lucide-react';
 import { useDeviceContext } from '@/hooks/use-device';
 import { apiClient } from '@/lib/api/client';
 import {
@@ -51,6 +51,17 @@ export default function AnalyticsPage() {
     },
     enabled: !!selectedDeviceId,
     refetchInterval: 30000
+  });
+
+  // ML Status (model comparison + feature importance)
+  const { data: mlStatus } = useQuery({
+    queryKey: ['ml-status'],
+    queryFn: async () => {
+      const res = await apiClient.get<any>('/api/v1/analytics/ml/status');
+      return res.data;
+    },
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 
   if (!selectedDeviceId) {
@@ -220,6 +231,128 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ML Model Performance Section */}
+      {mlStatus && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-blue-400" />
+            <h3 className="text-lg font-semibold">ML Model Performance</h3>
+            <Badge variant="outline" className={mlStatus.is_baseline ? 'border-yellow-500/50 text-yellow-400' : 'border-emerald-500/50 text-emerald-400'}>
+              {mlStatus.active_model} {mlStatus.active_model_version}
+            </Badge>
+            {!mlStatus.is_baseline && (
+              <Badge className="bg-emerald-950 text-emerald-400 border-0">
+                <CheckCircle className="h-3 w-3 mr-1" /> ACTIVE
+              </Badge>
+            )}
+          </div>
+
+          {/* Active Model Metric Cards */}
+          {(() => {
+            const active = mlStatus.model_comparison?.find((m: any) => m.is_active);
+            if (!active) return null;
+            const mx = active.metrics;
+            const fmt = (v: number | null) => v != null ? (v * 100).toFixed(1) + '%' : 'N/A';
+            return (
+              <div className="grid gap-4 md:grid-cols-4">
+                {[{label: 'F1 Score', value: fmt(mx.f1), desc: 'Harmonic mean of precision & recall', color: 'text-emerald-400'},
+                  {label: 'Precision', value: fmt(mx.precision), desc: 'True positive / all predicted positive', color: 'text-blue-400'},
+                  {label: 'Recall', value: fmt(mx.recall), desc: 'True positive / all actual positive', color: 'text-purple-400'},
+                  {label: 'PR-AUC', value: fmt(mx.pr_auc), desc: 'Area under precision-recall curve', color: 'text-orange-400'},
+                ].map(item => (
+                  <Card key={item.label} className="bg-slate-900 border-slate-800">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-xs text-slate-400 font-medium uppercase tracking-wider">{item.label}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold ${item.color}`}>{item.value}</div>
+                      <p className="text-xs text-slate-500 mt-1">{item.desc}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            );
+          })()}
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Model Comparison Table */}
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BarChart2 className="h-4 w-4 text-blue-400" />
+                  Model Comparison
+                </CardTitle>
+                <CardDescription>All 5 models trained on 1,253 real telemetry samples</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-5 gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2 border-b border-slate-800">
+                    <div className="col-span-2">Model</div>
+                    <div>F1</div>
+                    <div>Precision</div>
+                    <div>PR-AUC</div>
+                  </div>
+                  {mlStatus.model_comparison?.map((m: any) => {
+                    const mx = m.metrics;
+                    const pct = (v: number | null) => v != null ? (v * 100).toFixed(0) + '%' : '-';
+                    return (
+                      <div key={m.model_name} className={`grid grid-cols-5 gap-2 text-sm py-2 rounded px-1 ${
+                        m.is_active ? 'bg-blue-950/40 border border-blue-800/30' :
+                        m.is_baseline ? 'opacity-60' : ''
+                      }`}>
+                        <div className="col-span-2 flex items-center gap-1">
+                          <span className={m.is_active ? 'text-blue-300 font-semibold' : m.is_baseline ? 'text-slate-500' : 'text-slate-300'}>
+                            {m.model_name}
+                          </span>
+                          {m.is_active && <span className="text-[10px] text-blue-400 bg-blue-950 px-1 rounded">ACTIVE</span>}
+                          {m.is_baseline && <span className="text-[10px] text-slate-500 bg-slate-800 px-1 rounded">BASE</span>}
+                        </div>
+                        <div className={m.is_active ? 'text-emerald-400 font-bold' : 'text-slate-300'}>{pct(mx.f1)}</div>
+                        <div className="text-slate-300">{pct(mx.precision)}</div>
+                        <div className="text-slate-300">{pct(mx.pr_auc)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-slate-600 mt-4">
+                  MajorityBaseline is the evaluation floor (predicts majority class always). Any model beating it demonstrates learning.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Top Feature Importances */}
+            {mlStatus.feature_importance?.length > 0 && (
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-purple-400" />
+                    Top Feature Importances
+                  </CardTitle>
+                  <CardDescription>XGBoost feature contribution scores</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={mlStatus.feature_importance.slice(0, 8).map((f: any) => ({...f, pct: +(f.importance * 100).toFixed(1)}))}
+                        layout="vertical"
+                        margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--muted-foreground)/0.1)" />
+                        <XAxis type="number" domain={[0, 100]} tickFormatter={v => `${v}%`} fontSize={10} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis type="category" dataKey="feature" width={160} fontSize={10} stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip formatter={(v: any) => `${v}%`} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                        <Bar dataKey="pct" fill="#7c3aed" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Prediction History Table */}
       <Card>

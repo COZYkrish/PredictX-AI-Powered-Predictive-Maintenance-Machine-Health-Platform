@@ -1,6 +1,5 @@
 {
   "features": [
-    "id",
     "collection_duration_ms",
     "cpu_usage_percent",
     "cpu_frequency_current_mhz",
@@ -13,8 +12,7 @@
     "network_upload_bytes_per_sec",
     "network_download_bytes_per_sec",
     "process_count",
-    "uptime_seconds",
-    "battery_percent",
+    "system_uptime_seconds",
     "delta_cpu_usage_percent",
     "delta_memory_percent",
     "delta_disk_usage_percent",

@@ -228,8 +228,57 @@ export default function IssueInvestigationPage() {
 
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
             <h2 className="text-lg font-semibold text-white mb-4">Actionable Recommendation</h2>
-            <div className="whitespace-pre-wrap text-slate-300 mb-6">
-              {issue.recommendation}
+            <div className="mb-6 space-y-1">
+              {issue.recommendation
+                ? issue.recommendation.split('\n').map((line, idx) => {
+                    const trimmed = line.trim();
+                    // Section headers: ALL CAPS ending with colon
+                    if (/^[A-Z0-9 _/-]+:$/.test(trimmed) && trimmed.length > 3) {
+                      return (
+                        <p key={idx} className="text-blue-400 text-xs font-bold uppercase tracking-widest mt-4 mb-1">
+                          {trimmed}
+                        </p>
+                      );
+                    }
+                    // Numbered steps: "  1. Do something"
+                    if (/^\s*\d+\.\s/.test(line)) {
+                      const match = line.match(/^(\s*)(\d+\.\s)(.+)$/);
+                      if (match) {
+                        return (
+                          <p key={idx} className="text-slate-200 text-sm flex items-start">
+                            <span className="text-blue-500 font-semibold mr-2 shrink-0">{match[2].trim()}</span>
+                            <span>{match[3]}</span>
+                          </p>
+                        );
+                      }
+                    }
+                    // Bullet lines: "  • Process — CPU 12.3%"
+                    if (/^\s*•\s/.test(line) || /^\s*-\s/.test(line)) {
+                      return (
+                        <p key={idx} className="text-emerald-300 text-sm font-mono pl-4">
+                          {trimmed}
+                        </p>
+                      );
+                    }
+                    // First line (summary sentence) — slightly larger
+                    if (idx === 0 && trimmed.length > 0) {
+                      return (
+                        <p key={idx} className="text-slate-100 text-sm font-medium">
+                          {trimmed}
+                        </p>
+                      );
+                    }
+                    // Empty line
+                    if (trimmed === '') return <div key={idx} className="h-1" />;
+                    // Default
+                    return (
+                      <p key={idx} className="text-slate-300 text-sm pl-1">
+                        {trimmed}
+                      </p>
+                    );
+                  })
+                : <p className="text-slate-500 text-sm">No recommendation available.</p>
+              }
             </div>
 
             {(issue.issue_type === "HIGH_CPU_USAGE" || issue.issue_type === "MEMORY_PRESSURE") && (

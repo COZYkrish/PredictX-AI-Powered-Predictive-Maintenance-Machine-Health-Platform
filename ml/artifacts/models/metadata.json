@@ -1,19 +1,18 @@
 {
-  "model_name": "MajorityBaseline",
+  "model_name": "XGBoost",
   "model_version": "v1.0.0",
   "feature_version": "1.0",
   "schema_version": "1.0",
   "label_version": "1.0",
   "dataset_version": "1.0",
-  "training_timestamp_utc": "2026-08-23T15:28:46.989807+00:00",
+  "training_timestamp_utc": "2026-08-27T18:04:02.221553+00:00",
   "Python_version": "3.11",
   "package_versions": {
     "scikit-learn": "1.3.0",
     "pandas": "2.0.0"
   },
-  "feature_count": 50,
+  "feature_count": 48,
   "features": [
-    "id",
     "collection_duration_ms",
     "cpu_usage_percent",
     "cpu_frequency_current_mhz",
@@ -26,8 +25,7 @@
     "network_upload_bytes_per_sec",
     "network_download_bytes_per_sec",
     "process_count",
-    "uptime_seconds",
-    "battery_percent",
+    "system_uptime_seconds",
     "delta_cpu_usage_percent",
     "delta_memory_percent",
     "delta_disk_usage_percent",
@@ -66,22 +64,27 @@
   ],
   "metrics": {
     "accuracy": 1.0,
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1": 0.0,
-    "roc_auc": NaN,
-    "pr_auc": 0.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 0.9999999999999999,
+    "pr_auc": 1.0,
     "confusion_matrix": [
       [
-        57
+        113,
+        0
+      ],
+      [
+        0,
+        76
       ]
     ]
   },
   "prediction_threshold": 0.5,
   "artifacts": [
     {
-      "filename": "system_health_majoritybaseline_v1.0.0.joblib",
-      "sha256": "0efc5eb142d1e86a2515851138220a3f604985ac179c9428c43d106c27529e0d"
+      "filename": "system_health_xgboost_v1.0.0.joblib",
+      "sha256": "58e6246d59f825bf84f38277024e96bdef37049578d44d1146379928e55ed564"
     }
   ]
 }

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, Cpu, HardDrive, MemoryStick, ShieldAlert, CheckCircle2, AlertTriangle, Info, ArrowRight } from 'lucide-react';
+import { Activity, Cpu, HardDrive, MemoryStick, ShieldAlert, CheckCircle2, AlertTriangle, Info, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -154,6 +154,18 @@ export default function DashboardPage() {
     },
     enabled: !!selectedDeviceId,
     refetchInterval: 10000,
+  });
+
+  const { data: forecast } = useQuery({
+    queryKey: ['forecast', selectedDeviceId],
+    queryFn: async () => {
+      if (!selectedDeviceId) return null;
+      const res = await apiClient.get<any>(`/api/v1/devices/${selectedDeviceId}/forecast`);
+      return res.data;
+    },
+    enabled: !!selectedDeviceId,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 
   if (!selectedDeviceId || !selectedDevice) {
@@ -371,6 +383,67 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      {/* 30-Minute Trend Forecast */}
+      {forecast && (
+        <Card className="bg-slate-900 border-slate-800">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-blue-400" />
+                  30-Minute Trend Forecast
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">Linear regression on last 30 minutes of telemetry</CardDescription>
+              </div>
+              {forecast.has_warnings && (
+                <Badge className="bg-orange-950/60 text-orange-400 border border-orange-700/30">
+                  <AlertTriangle className="h-3 w-3 mr-1" /> Threshold Warning
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3">
+              {forecast.forecasts?.map((f: any) => {
+                const TrendIcon = f.trend === 'RISING' ? TrendingUp : f.trend === 'FALLING' ? TrendingDown : Minus;
+                const trendColor = f.trend === 'RISING'
+                  ? (f.will_breach_threshold ? 'text-red-400' : 'text-orange-400')
+                  : f.trend === 'FALLING' ? 'text-emerald-400' : 'text-slate-400';
+                const isWarning = f.will_breach_threshold;
+                return (
+                  <div key={f.metric} className={`rounded-lg p-4 border ${
+                    isWarning ? 'bg-red-950/20 border-red-800/30' : 'bg-slate-950/60 border-slate-800'
+                  }`}>
+                    <div className="text-xs text-slate-400 mb-2 uppercase tracking-wider">{f.label}</div>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <div className="text-slate-400 text-xs">Now</div>
+                        <div className="text-xl font-bold text-white">{f.current ?? '—'}%</div>
+                      </div>
+                      <TrendIcon className={`h-5 w-5 mx-2 ${trendColor}`} />
+                      <div className="text-right">
+                        <div className="text-slate-400 text-xs">In 30 min</div>
+                        <div className={`text-xl font-bold ${trendColor}`}>{f.forecast_30min ?? '—'}%</div>
+                      </div>
+                    </div>
+                    {f.will_breach_threshold && (
+                      <div className="mt-2 text-xs text-red-400">
+                        ⚠ Approaching {f.threshold}% threshold
+                        {f.eta_threshold_minutes && ` (~${f.eta_threshold_minutes} min)`}
+                      </div>
+                    )}
+                    {!f.will_breach_threshold && (
+                      <div className="mt-2 text-xs text-slate-600">
+                        Threshold: {f.threshold}% · {f.data_points} samples
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
