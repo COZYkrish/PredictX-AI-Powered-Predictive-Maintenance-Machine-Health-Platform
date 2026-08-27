@@ -203,12 +203,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className={`text-3xl font-bold ${
-              selectedDevice.risk_level === 'CRITICAL' ? 'text-red-500' :
-              selectedDevice.risk_level === 'HIGH' ? 'text-orange-500' :
-              selectedDevice.risk_level === 'MEDIUM' ? 'text-yellow-500' :
-              selectedDevice.risk_level === 'LOW' ? 'text-emerald-500' : 'text-slate-400'
+              riskLevel === 'CRITICAL' ? 'text-red-500' :
+              riskLevel === 'HIGH' ? 'text-orange-500' :
+              riskLevel === 'MEDIUM' ? 'text-yellow-500' :
+              riskLevel === 'LOW' ? 'text-emerald-500' : 'text-slate-400'
             }`}>
-              {selectedDevice.risk_level || 'UNKNOWN'}
+              {riskLevel}
             </div>
           </CardContent>
         </Card>
@@ -268,9 +268,9 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {issues && issues.length > 0 ? (
+            {activeIssues && activeIssues.length > 0 ? (
               <div className="space-y-4">
-                {issues.map(issue => (
+                {activeIssues.map(issue => (
                   <div key={issue.id} className="bg-slate-950 p-4 rounded-lg border border-slate-800/50 flex justify-between items-center">
                     <div>
                       <div className="flex items-center space-x-2">
@@ -310,13 +310,15 @@ export default function DashboardPage() {
             {highestSeverityIssue ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-slate-200 capitalize">{highestSeverityIssue.issue_type.replace(/_/g, " ")}</h3>
-                <p className="text-slate-300 text-sm whitespace-pre-wrap">{highestSeverityIssue.recommendation || highestSeverityIssue.explanation}</p>
+                <p className="text-slate-300 text-sm whitespace-pre-wrap">
+                  {recommendation || highestSeverityIssue.recommendation || highestSeverityIssue.explanation}
+                </p>
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full" onClick={() => router.push(`/alerts/${highestSeverityIssue.id}`)}>
                   INVESTIGATE <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             ) : (
-              <div className="text-slate-500 text-sm">System is healthy. No actions required.</div>
+              <div className="text-slate-500 text-sm">{recommendation ?? 'System is operating normally. No action required.'}</div>
             )}
           </CardContent>
         </Card>

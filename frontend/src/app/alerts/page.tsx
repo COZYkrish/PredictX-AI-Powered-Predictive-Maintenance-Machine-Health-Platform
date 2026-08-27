@@ -82,10 +82,22 @@ export default function AlertsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!isLoading && issues?.length === 0 && (
+              {isLoading && (
                 <TableRow className="border-slate-800">
                   <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    No issues found for this device.
+                    Loading issues…
+                  </TableCell>
+                </TableRow>
+              )}
+              {!isLoading && issues?.length === 0 && (
+                <TableRow className="border-slate-800">
+                  <TableCell colSpan={7} className="text-center py-12">
+                    <div className="flex flex-col items-center space-y-2 text-slate-500">
+                      <CheckCircle className="h-10 w-10 text-emerald-900" />
+                      <p className="font-medium text-slate-400">No Active Issues</p>
+                      <p className="text-sm">The system is not reporting any active diagnostic events for this device.</p>
+                      <p className="text-xs text-slate-600">Last checked: {new Date().toLocaleTimeString()}</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
