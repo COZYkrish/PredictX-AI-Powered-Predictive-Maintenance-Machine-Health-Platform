@@ -182,8 +182,8 @@ export default function DashboardPage() {
   const activeIssuesCount = systemState?.active_issue_count ?? issues?.length ?? 0;
   const activeAlertCount = systemState?.active_alert_count ?? 0;
   const anomalyCount = systemState?.anomaly?.is_anomaly ? 1 : (issues?.filter(i => i.issue_type === 'ANOMALY_DETECTED').length || 0);
-  const healthScore = systemState?.health_score ?? selectedDevice.health_score ?? 100;
-  const riskLevel = systemState?.risk_level ?? selectedDevice.risk_level ?? 'UNKNOWN';
+  const healthScore = systemState?.health_score ?? (selectedDevice as any)?.health_score ?? 100;
+  const riskLevel = systemState?.risk_level ?? (selectedDevice as any)?.risk_level ?? 'UNKNOWN';
   const recommendation = systemState?.recommended_action ?? null;
   const activeIssues = systemState?.active_issues ?? issues ?? [];
   const highestSeverityIssue = activeIssues.sort((a, b) => {

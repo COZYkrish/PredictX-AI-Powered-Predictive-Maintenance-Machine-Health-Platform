@@ -18,6 +18,7 @@ import {
 
 interface Issue {
   id: string;
+  device_id?: string;
   issue_type: string;
   severity: string;
   status: string;
