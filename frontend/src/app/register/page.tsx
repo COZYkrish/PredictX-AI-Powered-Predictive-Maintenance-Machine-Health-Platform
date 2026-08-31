@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Activity } from 'lucide-react';
+import { ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -17,8 +16,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { authApi } from '@/lib/api/auth';
 
 const registerSchema = z.object({
@@ -51,9 +48,8 @@ export default function RegisterPage() {
       await authApi.register({
         email: values.email,
         password: values.password,
-        role: 'VIEWER' // Default role
+        role: 'VIEWER'
       });
-      // After successful registration, redirect to login
       router.push('/login?registered=true');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -63,80 +59,165 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
-      <Link href="/" className="absolute left-8 top-8 flex items-center gap-2 font-bold text-lg">
-        <Activity className="h-6 w-6 text-healthy" />
-        PredictX
-      </Link>
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-black overflow-hidden px-4 py-12 font-manrope">
       
-      <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl border shadow-sm">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Create an account</h2>
-          <p className="text-muted-foreground mt-2">
-            Sign up to start monitoring your devices
+      {/* Background Video — Full-Bleed Cosmic Video */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-top opacity-80"
+        >
+          <source
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
+            type="video/mp4"
+          />
+        </video>
+        
+        {/* Subtle Dark Vignette */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%)',
+          }}
+        />
+      </div>
+
+      {/* Floating Header Bar */}
+      <header className="fixed top-6 left-0 right-0 z-50 px-6 sm:px-12 flex items-center justify-between pointer-events-none">
+        <Link
+          href="/"
+          className="pointer-events-auto flex items-center gap-2.5 rounded-full bg-black/40 backdrop-blur-lg px-4 py-2 border border-white/15 shadow-xl transition-transform hover:scale-[1.02]"
+        >
+          <svg className="w-5 h-5 fill-white" viewBox="0 0 256 256">
+            <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 0 0 C 70.692 0 128 57.308 128 128 C 57.308 128 0 70.692 0 0 Z M 256 0 C 256 70.692 198.692 128 128 128 C 128 57.308 185.308 0 256 0 Z" />
+          </svg>
+          <span className="text-sm font-semibold text-white tracking-tight flex items-center gap-1.5 font-geist">
+            <span>predictx</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-swiss-red animate-pulse" />
+          </span>
+        </Link>
+
+        <Link
+          href="/login"
+          className="pointer-events-auto rounded-full bg-white/10 backdrop-blur-lg px-4 py-2 text-xs font-medium text-white hover:bg-white/20 border border-white/15 transition-colors"
+        >
+          Sign In
+        </Link>
+      </header>
+
+      {/* Main Liquid-Glass Registration Card */}
+      <div className="relative z-10 w-full max-w-md liquid-glass rounded-[2rem] p-8 sm:p-10 shadow-2xl text-left border border-white/20 my-auto">
+        
+        {/* Card Header with Instrument Serif Title */}
+        <div className="text-center space-y-2 mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 border border-white/15 text-[11px] font-mono text-white/80 uppercase tracking-widest mb-1">
+            <Sparkles className="w-3 h-3 text-white/80" />
+            <span>DEPLOYMENT ACCESS</span>
+          </div>
+          <h1 className="font-instrument italic text-4xl sm:text-5xl text-white font-normal leading-tight [text-shadow:_0_2px_16px_rgba(0,0,0,0.8)]">
+            Create an account.
+          </h1>
+          <p className="text-xs sm:text-sm text-white/70">
+            Sign up to start monitoring your infrastructure in real time
           </p>
         </div>
 
+        {/* Error Alert */}
         {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div className="mb-6 flex items-start gap-2.5 rounded-2xl bg-swiss-red/20 border border-swiss-red/40 p-3.5 text-xs text-white">
+            <AlertCircle className="w-4 h-4 text-swiss-red shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
         )}
 
+        {/* Form */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-white/80">Email Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
+                    <input
+                      type="email"
+                      placeholder="engineer@predictx.io"
+                      className="w-full rounded-full bg-white/5 border border-white/15 px-5 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/50 focus:bg-white/10 focus:outline-none backdrop-blur-md transition-all shadow-inner"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-swiss-red" />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-white/80">Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      className="w-full rounded-full bg-white/5 border border-white/15 px-5 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/50 focus:bg-white/10 focus:outline-none backdrop-blur-md transition-all shadow-inner"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-swiss-red" />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="confirmPassword"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-white/80">Confirm Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      className="w-full rounded-full bg-white/5 border border-white/15 px-5 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/50 focus:bg-white/10 focus:outline-none backdrop-blur-md transition-all shadow-inner"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs text-swiss-red" />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </Button>
+
+            {/* Submit CTA Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full rounded-full bg-white text-black font-semibold text-sm py-3.5 mt-3 hover:bg-white/90 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <span>{isLoading ? 'Creating Workspace...' : 'Create Account'}</span>
+              {!isLoading && <ArrowRight className="w-4 h-4" />}
+            </button>
           </form>
         </Form>
 
-        <div className="text-center text-sm">
-          Already have an account?{' '}
-          <Link href="/login" className="text-primary font-medium hover:underline">
+        {/* Footer Link */}
+        <div className="text-center text-xs text-white/60 mt-6 pt-5 border-t border-white/10">
+          <span>Already have an account? </span>
+          <Link href="/login" className="text-white font-medium hover:underline underline-offset-4">
             Sign in
           </Link>
         </div>
+
       </div>
+
     </div>
   );
 }

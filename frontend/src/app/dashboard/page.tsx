@@ -4,13 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useDeviceContext } from '@/hooks/use-device';
 import { useWebsocket } from '@/hooks/use-websocket';
 import { apiClient } from '@/lib/api/client';
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Activity, Cpu, HardDrive, MemoryStick, ShieldAlert, CheckCircle2, AlertTriangle, Info, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Activity, Cpu, ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight, TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
@@ -170,17 +165,16 @@ export default function DashboardPage() {
 
   if (!selectedDeviceId || !selectedDevice) {
     return (
-      <div className="flex h-[50vh] flex-col items-center justify-center space-y-4 text-center">
-        <Activity className="h-12 w-12 text-muted-foreground opacity-20" />
-        <h2 className="text-xl font-medium text-muted-foreground">No Device Selected</h2>
+      <div className="flex h-[60vh] flex-col items-center justify-center space-y-4 text-center font-mono">
+        <Activity className="h-12 w-12 text-white/20 animate-pulse" />
+        <h2 className="text-lg font-semibold text-white/50 uppercase tracking-widest">No Device Selected</h2>
+        <p className="text-xs text-white/40 max-w-sm">Select an active machine from the device dropdown above to stream telemetry.</p>
       </div>
     );
   }
 
   const latestPrediction = predictions?.[0];
-  // Use systemState for all summary card values — single source of truth
   const activeIssuesCount = systemState?.active_issue_count ?? issues?.length ?? 0;
-  const activeAlertCount = systemState?.active_alert_count ?? 0;
   const anomalyCount = systemState?.anomaly?.is_anomaly ? 1 : (issues?.filter(i => i.issue_type === 'ANOMALY_DETECTED').length || 0);
   const healthScore = systemState?.health_score ?? (selectedDevice as any)?.health_score ?? 100;
   const riskLevel = systemState?.risk_level ?? (selectedDevice as any)?.risk_level ?? 'UNKNOWN';
@@ -192,258 +186,288 @@ export default function DashboardPage() {
   })[0];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
-      {/* 1. TOP PRIORITIES */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400 uppercase tracking-wider">System Health</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold ${
-              healthScore >= 80 ? 'text-emerald-400' : 
-              healthScore >= 50 ? 'text-yellow-400' : 'text-red-400'
-            }`}>
-              {healthScore}/100
-            </div>
-          </CardContent>
-        </Card>
+    <div className="max-w-7xl mx-auto space-y-6 font-manrope">
+      
+      {/* 1. TOP PRIORITIES KPI CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400 uppercase tracking-wider">Risk Level</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold ${
-              riskLevel === 'CRITICAL' ? 'text-red-500' :
-              riskLevel === 'HIGH' ? 'text-orange-500' :
-              riskLevel === 'MEDIUM' ? 'text-yellow-500' :
-              riskLevel === 'LOW' ? 'text-emerald-500' : 'text-slate-400'
-            }`}>
-              {riskLevel}
-            </div>
-          </CardContent>
-        </Card>
+        {/* System Health */}
+        <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-5 shadow-xl transition-all duration-200 hover:border-white/30">
+          <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-widest block mb-2">SYSTEM HEALTH</span>
+          <div className={`text-4xl font-mono font-black tracking-tight ${
+            healthScore >= 80 ? 'text-white' : 
+            healthScore >= 50 ? 'text-swiss-red' : 'text-swiss-red'
+          }`}>
+            {healthScore}<span className="text-sm font-normal text-white/40">/100</span>
+          </div>
+          <span className="text-[10px] font-mono text-white/40 uppercase mt-2 block">
+            {healthScore >= 80 ? '● OPTIMAL OPERATING STATE' : '⚠ COMPROMISED TELEMETRY'}
+          </span>
+        </div>
+        
+        {/* Risk Level */}
+        <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-5 shadow-xl transition-all duration-200 hover:border-white/30">
+          <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-widest block mb-2">RISK LEVEL</span>
+          <div className={`text-4xl font-mono font-black tracking-tight ${
+            riskLevel === 'CRITICAL' || riskLevel === 'HIGH' ? 'text-swiss-red' :
+            riskLevel === 'MEDIUM' ? 'text-swiss-red' : 'text-white'
+          }`}>
+            {riskLevel}
+          </div>
+          <span className="text-[10px] font-mono text-white/40 uppercase mt-2 block">
+            INFERENCE DRIFT VECTOR
+          </span>
+        </div>
 
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400 uppercase tracking-wider">Active Issues</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">
-              {activeIssuesCount}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Active Issues */}
+        <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-5 shadow-xl transition-all duration-200 hover:border-white/30">
+          <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-widest block mb-2">ACTIVE ISSUES</span>
+          <div className="text-4xl font-mono font-black text-white tracking-tight">
+            {activeIssuesCount}
+          </div>
+          <span className="text-[10px] font-mono text-white/40 uppercase mt-2 block">
+            TRACKED INCIDENT DOCKETS
+          </span>
+        </div>
 
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400 uppercase tracking-wider">Anomalies</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold ${anomalyCount > 0 ? 'text-orange-400' : 'text-slate-200'}`}>
-              {anomalyCount}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Anomalies */}
+        <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-5 shadow-xl transition-all duration-200 hover:border-white/30">
+          <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-widest block mb-2">ANOMALIES</span>
+          <div className={`text-4xl font-mono font-black tracking-tight ${anomalyCount > 0 ? 'text-swiss-red' : 'text-white'}`}>
+            {anomalyCount}
+          </div>
+          <span className="text-[10px] font-mono text-white/40 uppercase mt-2 block">
+            ISOLATION FOREST CLUSTERS
+          </span>
+        </div>
+
       </div>
 
       {/* 2. LATEST AI ANALYSIS */}
-      <Card className="bg-slate-950 border-slate-800">
-        <CardHeader>
-          <CardTitle className="text-blue-400 flex items-center">
-            <Activity className="w-5 h-5 mr-2" /> Latest AI Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {latestPrediction ? (
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
-              <div><span className="text-slate-500 block">Prediction</span><span className="text-slate-200 font-medium">{latestPrediction.prediction}</span></div>
-              <div><span className="text-slate-500 block">Probability</span><span className="text-slate-200">{(latestPrediction.prediction_probability * 100).toFixed(1)}%</span></div>
-              <div><span className="text-slate-500 block">Anomaly</span><span className="text-slate-200">{latestPrediction.anomaly_label}</span></div>
-              <div><span className="text-slate-500 block">Risk</span><span className="text-slate-200">{latestPrediction.risk_level}</span></div>
-              <div><span className="text-slate-500 block">Model</span><span className="text-slate-200">{latestPrediction.model_version}</span></div>
-              <div><span className="text-slate-500 block">Last Inference</span><span className="text-slate-200">{new Date(latestPrediction.created_at).toLocaleTimeString()}</span></div>
+      <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-6 shadow-xl">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-white" />
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">LATEST AI INFERENCE DOCKET</h2>
+          </div>
+          <span className="text-[10px] font-mono text-white/40 uppercase">DUAL ML PIPELINE ACTIVE</span>
+        </div>
+        
+        {latestPrediction ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 font-mono">
+            <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] text-white/40 uppercase block mb-1">PREDICTION</span>
+              <span className="text-sm font-bold text-white">{latestPrediction.prediction}</span>
             </div>
-          ) : (
-            <div className="text-slate-500 text-sm">No predictions yet.</div>
-          )}
-        </CardContent>
-      </Card>
+            <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] text-white/40 uppercase block mb-1">PROBABILITY</span>
+              <span className="text-sm font-bold text-white">{(latestPrediction.prediction_probability * 100).toFixed(1)}%</span>
+            </div>
+            <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] text-white/40 uppercase block mb-1">ANOMALY</span>
+              <span className="text-sm font-bold text-white">{latestPrediction.anomaly_label}</span>
+            </div>
+            <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] text-white/40 uppercase block mb-1">RISK</span>
+              <span className={`text-sm font-bold ${latestPrediction.risk_level === 'HIGH' ? 'text-swiss-red' : 'text-white'}`}>
+                {latestPrediction.risk_level}
+              </span>
+            </div>
+            <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] text-white/40 uppercase block mb-1">MODEL</span>
+              <span className="text-sm font-bold text-white">{latestPrediction.model_version}</span>
+            </div>
+            <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] text-white/40 uppercase block mb-1">LAST INFERENCE</span>
+              <span className="text-sm font-bold text-white">{new Date(latestPrediction.created_at).toLocaleTimeString()}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="text-white/40 text-xs font-mono py-4 text-center">No predictions recorded yet for this device.</div>
+        )}
+      </div>
 
       {/* 3. CURRENT ISSUES & RECOMMENDATION */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader>
-            <CardTitle className="text-slate-200 flex items-center">
-              <AlertTriangle className="w-5 h-5 mr-2 text-orange-400" /> Current Issues
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Issues List: 7 Columns */}
+        <div className="lg:col-span-7 bg-[#0d0d0d] border border-white/15 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-3">
+              <AlertTriangle className="w-4 h-4 text-swiss-red" />
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">ACTIVE INCIDENTS</h2>
+            </div>
+
             {activeIssues && activeIssues.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {activeIssues.map(issue => (
-                  <div key={issue.id} className="bg-slate-950 p-4 rounded-lg border border-slate-800/50 flex justify-between items-center">
+                  <div key={issue.id} className="bg-[#141414] p-4 rounded-xl border border-white/10 flex justify-between items-center transition-all hover:border-white/20">
                     <div>
                       <div className="flex items-center space-x-2">
-                        <span className={`text-xs px-2 py-0.5 rounded font-bold ${
-                          issue.severity === 'CRITICAL' ? 'bg-red-900/50 text-red-400' :
-                          issue.severity === 'HIGH' ? 'bg-orange-900/50 text-orange-400' :
-                          'bg-yellow-900/50 text-yellow-400'
-                        }`}>{issue.severity}</span>
-                        <span className="text-slate-200 font-medium capitalize">{issue.issue_type.replace(/_/g, " ")}</span>
+                        <span className="text-[9px] px-2 py-0.5 rounded font-mono font-black uppercase bg-swiss-red text-white">
+                          {issue.severity}
+                        </span>
+                        <span className="text-white font-semibold text-xs sm:text-sm uppercase">{issue.issue_type.replace(/_/g, " ")}</span>
                       </div>
-                      <div className="text-sm text-slate-400 mt-1">
+                      <div className="text-xs font-mono text-white/50 mt-1.5">
                         {issue.current_value?.toFixed(1)}% for ~{issue.duration_seconds}s
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-slate-700 text-slate-300 hover:text-white" onClick={() => router.push(`/alerts/${issue.id}`)}>
-                      VIEW DETAILS
-                    </Button>
+                    <button
+                      className="rounded-full bg-white/10 hover:bg-white text-white hover:text-black px-3.5 py-1.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors"
+                      onClick={() => router.push(`/alerts/${issue.id}`)}
+                    >
+                      VIEW
+                    </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-8 text-slate-500">
-                <CheckCircle2 className="w-12 h-12 text-emerald-900 mb-2" />
-                <p>No active issues.</p>
+              <div className="flex flex-col items-center justify-center p-8 text-white/40 font-mono text-xs">
+                <CheckCircle2 className="w-10 h-10 text-white/20 mb-2" />
+                <p>ZERO ACTIVE INCIDENTS. SYSTEM STABLE.</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="bg-blue-950/20 border-blue-900/40">
-          <CardHeader>
-            <CardTitle className="text-blue-400 flex items-center">
-              <CheckCircle2 className="w-5 h-5 mr-2" /> Recommended Action
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Recommended Action: 5 Columns */}
+        <div className="lg:col-span-5 bg-[#0d0d0d] border border-white/15 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-3">
+              <CheckCircle2 className="w-4 h-4 text-white" />
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">RECOMMENDED REMEDIATION</h2>
+            </div>
+
             {highestSeverityIssue ? (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-slate-200 capitalize">{highestSeverityIssue.issue_type.replace(/_/g, " ")}</h3>
-                <p className="text-slate-300 text-sm whitespace-pre-wrap">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wide">{highestSeverityIssue.issue_type.replace(/_/g, " ")}</h3>
+                <p className="text-white/80 text-xs leading-relaxed whitespace-pre-wrap">
                   {recommendation || highestSeverityIssue.recommendation || highestSeverityIssue.explanation}
                 </p>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full" onClick={() => router.push(`/alerts/${highestSeverityIssue.id}`)}>
-                  INVESTIGATE <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
               </div>
             ) : (
-              <div className="text-slate-500 text-sm">{recommendation ?? 'System is operating normally. No action required.'}</div>
+              <div className="text-white/50 text-xs leading-relaxed font-mono">
+                {recommendation ?? 'System operating within optimal parameters. No manual intervention needed.'}
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {highestSeverityIssue && (
+            <button
+              className="w-full mt-6 rounded-full bg-white text-black font-bold text-xs uppercase tracking-widest py-3.5 hover:bg-white/90 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 shadow-lg"
+              onClick={() => router.push(`/alerts/${highestSeverityIssue.id}`)}
+            >
+              <span>EXECUTE REMEDIATION</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
       </div>
 
-      {/* 4. LIVE TELEMETRY */}
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader>
-          <CardTitle className="text-slate-200">Live Telemetry</CardTitle>
-          <CardDescription className="text-slate-500">Real-time resource utilization</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
-              <span className="text-xs text-slate-500 block mb-1">CPU USAGE</span>
-              <span className="text-2xl text-slate-200">{telemetry?.cpu_percent?.toFixed(1) || '0.0'}%</span>
-            </div>
-            <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
-              <span className="text-xs text-slate-500 block mb-1">MEMORY USAGE</span>
-              <span className="text-2xl text-slate-200">{telemetry?.memory_percent?.toFixed(1) || '0.0'}%</span>
-            </div>
-            <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
-              <span className="text-xs text-slate-500 block mb-1">DISK USAGE</span>
-              <span className="text-2xl text-slate-200">{telemetry?.disk_percent?.toFixed(1) || '0.0'}%</span>
-            </div>
+      {/* 4. LIVE TELEMETRY CHART */}
+      <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-6 shadow-xl space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div>
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">LIVE TELEMETRY STREAM</h2>
+            <span className="text-[10px] font-mono text-white/40 uppercase">REAL-TIME SYSTEM RESOURCE METRICS</span>
           </div>
-          
-          <div className="h-[300px] w-full">
-            {chartData && chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis dataKey="time" stroke="#475569" fontSize={12} />
-                  <YAxis stroke="#475569" fontSize={12} domain={[0, 100]} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc' }}
-                    itemStyle={{ color: '#e2e8f0' }}
-                  />
-                  <Legend />
-                  <Line type="monotone" dataKey="CPU" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="Memory" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="Disk" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                Waiting for telemetry data...
-              </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-swiss-red animate-pulse" />
+            <span className="text-[10px] font-mono font-bold uppercase text-white/80">LIVE FEED</span>
+          </div>
+        </div>
+
+        {/* 3 Snapshot Tiles */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
+          <div className="bg-[#141414] p-4 rounded-xl border border-white/10">
+            <span className="text-[10px] text-white/40 uppercase block mb-1">CPU UTILIZATION</span>
+            <span className="text-3xl font-black text-white">{telemetry?.cpu_percent?.toFixed(1) || '0.0'}%</span>
+          </div>
+          <div className="bg-[#141414] p-4 rounded-xl border border-white/10">
+            <span className="text-[10px] text-white/40 uppercase block mb-1">MEMORY OCCUPANCY</span>
+            <span className="text-3xl font-black text-white">{telemetry?.memory_percent?.toFixed(1) || '0.0'}%</span>
+          </div>
+          <div className="bg-[#141414] p-4 rounded-xl border border-white/10">
+            <span className="text-[10px] text-white/40 uppercase block mb-1">DISK OCCUPANCY</span>
+            <span className="text-3xl font-black text-white">{telemetry?.disk_percent?.toFixed(1) || '0.0'}%</span>
+          </div>
+        </div>
+        
+        {/* Recharts Container */}
+        <div className="h-[280px] w-full pt-2">
+          {chartData && chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#222222" />
+                <XAxis dataKey="time" stroke="#666666" fontSize={11} fontFamily="monospace" />
+                <YAxis stroke="#666666" fontSize={11} domain={[0, 100]} fontFamily="monospace" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#121212', borderColor: '#333333', color: '#ffffff', borderRadius: '8px' }}
+                  itemStyle={{ color: '#ffffff' }}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="CPU" stroke="#ff3000" strokeWidth={2} dot={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="Memory" stroke="#ffffff" strokeWidth={2} dot={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="Disk" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-white/40 font-mono text-xs">
+              Waiting for telemetry data...
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 5. 30-MINUTE TREND FORECAST */}
+      {forecast && (
+        <div className="bg-[#0d0d0d] border border-white/15 rounded-2xl p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-white" />
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">30-MINUTE LINEAR TRAJECTORY FORECAST</h2>
+            </div>
+            {forecast.has_warnings && (
+              <span className="bg-swiss-red text-white text-[9px] font-mono font-bold px-2 py-0.5 uppercase rounded-sm">
+                THRESHOLD WARNING
+              </span>
             )}
           </div>
-        </CardContent>
-      </Card>
-      {/* 30-Minute Trend Forecast */}
-      {forecast && (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-blue-400" />
-                  30-Minute Trend Forecast
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">Linear regression on last 30 minutes of telemetry</CardDescription>
-              </div>
-              {forecast.has_warnings && (
-                <Badge className="bg-orange-950/60 text-orange-400 border border-orange-700/30">
-                  <AlertTriangle className="h-3 w-3 mr-1" /> Threshold Warning
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-3">
-              {forecast.forecasts?.map((f: any) => {
-                const TrendIcon = f.trend === 'RISING' ? TrendingUp : f.trend === 'FALLING' ? TrendingDown : Minus;
-                const trendColor = f.trend === 'RISING'
-                  ? (f.will_breach_threshold ? 'text-red-400' : 'text-orange-400')
-                  : f.trend === 'FALLING' ? 'text-emerald-400' : 'text-slate-400';
-                const isWarning = f.will_breach_threshold;
-                return (
-                  <div key={f.metric} className={`rounded-lg p-4 border ${
-                    isWarning ? 'bg-red-950/20 border-red-800/30' : 'bg-slate-950/60 border-slate-800'
-                  }`}>
-                    <div className="text-xs text-slate-400 mb-2 uppercase tracking-wider">{f.label}</div>
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <div className="text-slate-400 text-xs">Now</div>
-                        <div className="text-xl font-bold text-white">{f.current ?? '—'}%</div>
-                      </div>
-                      <TrendIcon className={`h-5 w-5 mx-2 ${trendColor}`} />
-                      <div className="text-right">
-                        <div className="text-slate-400 text-xs">In 30 min</div>
-                        <div className={`text-xl font-bold ${trendColor}`}>{f.forecast_30min ?? '—'}%</div>
-                      </div>
+
+          <div className="grid gap-4 md:grid-cols-3 font-mono">
+            {forecast.forecasts?.map((f: any) => {
+              const TrendIcon = f.trend === 'RISING' ? TrendingUp : f.trend === 'FALLING' ? TrendingDown : Minus;
+              const isWarning = f.will_breach_threshold;
+              return (
+                <div key={f.metric} className={`rounded-xl p-4 border ${
+                  isWarning ? 'bg-swiss-red/10 border-swiss-red/40' : 'bg-[#141414] border-white/10'
+                }`}>
+                  <div className="text-[10px] text-white/50 mb-2 uppercase tracking-wider font-bold">{f.label}</div>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <div className="text-white/40 text-[10px]">NOW</div>
+                      <div className="text-2xl font-black text-white">{f.current ?? '—'}%</div>
                     </div>
-                    {f.will_breach_threshold && (
-                      <div className="mt-2 text-xs text-red-400">
-                        ⚠ Approaching {f.threshold}% threshold
-                        {f.eta_threshold_minutes && ` (~${f.eta_threshold_minutes} min)`}
-                      </div>
-                    )}
-                    {!f.will_breach_threshold && (
-                      <div className="mt-2 text-xs text-slate-600">
-                        Threshold: {f.threshold}% · {f.data_points} samples
-                      </div>
-                    )}
+                    <TrendIcon className={`h-5 w-5 mx-2 ${isWarning ? 'text-swiss-red' : 'text-white'}`} />
+                    <div className="text-right">
+                      <div className="text-white/40 text-[10px]">PROJECTED T+30M</div>
+                      <div className={`text-2xl font-black ${isWarning ? 'text-swiss-red' : 'text-white'}`}>{f.forecast_30min ?? '—'}%</div>
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  {f.will_breach_threshold && (
+                    <div className="mt-2 text-[10px] text-swiss-red font-bold uppercase">
+                      ⚠ Approaching {f.threshold}% threshold {f.eta_threshold_minutes && `(~${f.eta_threshold_minutes} min)`}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
+
     </div>
   );
 }

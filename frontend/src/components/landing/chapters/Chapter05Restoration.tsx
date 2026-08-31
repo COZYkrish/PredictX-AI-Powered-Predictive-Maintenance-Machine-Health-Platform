@@ -1,145 +1,155 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { DEMO_RESTORATION } from '@/lib/landing/demo-data';
+import { ArrowRight, CheckCircle2, Shield, Cpu, Activity } from 'lucide-react';
 import { PROJECT_CONFIG } from '@/lib/landing/project-config';
 import ScrollReveal from '../ui/ScrollReveal';
 
 export default function Chapter05Restoration() {
-  const [activeStage, setActiveStage] = useState(3);
-  const res = DEMO_RESTORATION;
   const cfg = PROJECT_CONFIG;
 
   return (
     <section
       id="chapter-05"
-      className="relative border-b-4 border-black bg-white min-h-[calc(100vh-4rem)] flex items-center py-12 lg:py-16 px-6 md:px-12 lg:px-16 swiss-grid-pattern overflow-hidden"
+      className="relative bg-[#050505] text-[#fafafa] h-screen min-h-screen w-full flex flex-col justify-between overflow-hidden font-manrope pt-20 pb-8"
+      style={{ background: '#050505' }}
     >
-      <div className="max-w-5xl mx-auto w-full flex flex-col items-center text-center gap-8">
-        
-        {/* Chapter Prefix */}
-        <ScrollReveal delay={0} direction="down" distance={16}>
-          <div className="flex items-center gap-3">
-            <span className="bg-swiss-red text-white text-xs font-black px-3 py-1 tracking-widest uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              {cfg.sceneLabels.restoration}
-            </span>
-            <span className="text-black/50 text-xs font-mono tracking-widest uppercase font-bold">
-              EQUILIBRIUM.05
-            </span>
-          </div>
-        </ScrollReveal>
+      {/* Background Video — Fully visible at 100% opacity without dark gradient blocking */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-100"
+        >
+          <source
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-        {/* Staggered Display Title */}
-        <div className="max-w-3xl space-y-1">
-          <ScrollReveal delay={80} direction="up" distance={24}>
-            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-black leading-none">
-              CLOSED-LOOP
-            </h2>
+        {/* Minimal bottom edge blend for smooth footer transition */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, transparent 80%, rgba(5,5,5,0.7) 94%, #050505 100%)',
+          }}
+        />
+      </div>
+
+      {/* Main Foreground Composition */}
+      <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-16 flex flex-col justify-between h-full pt-8 pb-4">
+        
+        {/* Top/Middle Block: Brand Mark + Headline + Narrative + CTAs */}
+        <div className="my-auto max-w-2xl text-left space-y-5">
+          
+          {/* Brand Mark: Angular Lightning S-Mark with Metallic Gradient */}
+          <ScrollReveal delay={0} direction="down" distance={16}>
+            <div className="flex items-center gap-4">
+              <svg className="w-7 h-11 drop-shadow-lg" viewBox="0 0 31.5 48.5" fill="none">
+                <defs>
+                  <linearGradient id="ch5-bg1" x1="8" y1="0" x2="34.1" y2="28.9" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#9e9e9e"/>
+                    <stop offset="0.28" stopColor="#a6a6a6"/>
+                    <stop offset="0.34" stopColor="#a3a3a3"/>
+                    <stop offset="0.40" stopColor="#3a3a3a"/>
+                    <stop offset="0.55" stopColor="#414141"/>
+                    <stop offset="0.60" stopColor="#7a7a7a"/>
+                    <stop offset="0.68" stopColor="#8e8e8e"/>
+                    <stop offset="0.80" stopColor="#a9a9a9"/>
+                    <stop offset="0.95" stopColor="#c4c4c4"/>
+                    <stop offset="1" stopColor="#cccccc"/>
+                  </linearGradient>
+                </defs>
+                <path d="M21.5 0 L21.5 19.5 L31.5 19.5 L31.5 29 L10 48.5 L10 28.5 L0.5 28.5 L0.5 18.5 Z" fill="url(#ch5-bg1)"/>
+                <rect x="0.5" y="18.5" width="9" height="10" fill="#fdfdfd"/>
+                <rect x="22" y="19.5" width="9.5" height="9.5" fill="#fdfdfd"/>
+              </svg>
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-[0.25em] text-[#e0e0e0] font-semibold [text-shadow:_0_2px_8px_rgba(0,0,0,0.9)]">
+                  PREDICTX · RESTORATION
+                </span>
+                <span className="text-[10px] uppercase font-mono tracking-widest text-[#a0a0a0] [text-shadow:_0_1px_6px_rgba(0,0,0,0.9)]">
+                  EQUILIBRIUM PROTOCOL.05
+                </span>
+              </div>
+            </div>
           </ScrollReveal>
-          <ScrollReveal delay={140} direction="up" distance={24}>
-            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-swiss-red leading-none">
-              RESOLUTION.
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={220} direction="up" distance={20}>
-            <p className="mt-5 text-base sm:text-lg md:text-xl font-bold text-black/80 max-w-xl mx-auto uppercase tracking-tight leading-snug">
-              Remediation without verification is guesswork. PredictX validates telemetry stability over a 120-second window before declaring the system healthy.
+
+          {/* Headline with High-Clarity Contrast */}
+          <div className="space-y-1">
+            <ScrollReveal delay={80} direction="up" distance={20}>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-[#fafafa] leading-[1.08] [text-shadow:_0_4px_24px_rgba(0,0,0,0.95)]">
+                The Next Layer
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal delay={140} direction="up" distance={20}>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-white leading-[1.08] [text-shadow:_0_4px_24px_rgba(0,0,0,0.95)]">
+                of System Intelligence.
+              </h2>
+            </ScrollReveal>
+          </div>
+
+          {/* Subcopy */}
+          <ScrollReveal delay={200} direction="up" distance={16}>
+            <p className="text-base sm:text-lg md:text-xl font-normal text-white/90 leading-relaxed max-w-xl [text-shadow:_0_2px_12px_rgba(0,0,0,0.95)]">
+              A unified predictive maintenance platform to help engineering teams detect anomalies, protect kernel stability, and scale AI operations with confidence.
             </p>
           </ScrollReveal>
+
+          {/* Action CTAs: White Pill + Ghost Link */}
+          <ScrollReveal delay={260} direction="up" distance={16}>
+            <div className="pt-2 flex items-center gap-6 flex-wrap">
+              <Link
+                href={cfg.routes.register}
+                className="inline-flex items-center justify-center rounded-full px-8 py-3.5 bg-white text-[#050505] font-semibold text-sm sm:text-base hover:opacity-90 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-[1.02]"
+              >
+                Get Started
+              </Link>
+              <Link
+                href={cfg.routes.dashboard}
+                className="inline-flex items-center gap-2 text-sm sm:text-base font-semibold text-white hover:text-white/80 transition-colors group [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]"
+              >
+                <span>View Architecture</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </ScrollReveal>
+
         </div>
 
-        {/* 4-Stage Drain Cascade Blocks with Staggered Visuals */}
-        <ScrollReveal delay={280} direction="up" distance={20} className="w-full max-w-2xl">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 border-4 border-black bg-black p-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            {res.stages.map((stage, i) => {
-              const isSelected = activeStage === i;
-              const isFinal = i === res.stages.length - 1;
-              return (
-                <div
-                  key={stage.time}
-                  onClick={() => setActiveStage(i)}
-                  className={`p-3.5 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 ${
-                    isSelected
-                      ? isFinal
-                        ? 'bg-swiss-red text-white'
-                        : 'bg-black text-white'
-                      : 'bg-white text-black hover:bg-[#F2F2F2]'
-                  }`}
-                >
-                  <span className="font-mono text-[10px] font-bold block uppercase mb-1 opacity-70">
-                    {stage.time}
-                  </span>
-                  <span className="font-mono text-2xl sm:text-3xl font-black block">
-                    {stage.value}%
-                  </span>
-                  <span className="font-mono text-[9px] uppercase tracking-wider block opacity-80 mt-1 font-bold">
-                    {stage.state}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </ScrollReveal>
-
-        {/* Verification Success Matrix */}
-        <ScrollReveal delay={340} direction="up" distance={20} className="w-full max-w-2xl">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div className="border-2 border-black p-3.5 bg-white text-left shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform duration-200 hover:-translate-y-0.5">
-              <span className="text-[9px] font-black uppercase tracking-widest text-black/50 block font-mono">VERIFICATION</span>
-              <span className="text-sm font-mono font-black text-black">{res.verificationDuration}S CONFIRMED</span>
-            </div>
-            <div className="border-2 border-black p-3.5 bg-white text-left shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform duration-200 hover:-translate-y-0.5">
-              <span className="text-[9px] font-black uppercase tracking-widest text-black/50 block font-mono">INCIDENT STATE</span>
-              <span className="text-sm font-mono font-black text-swiss-red">✓ {res.alertStatus}</span>
-            </div>
-            <div className="border-2 border-black p-3.5 bg-white text-left shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-transform duration-200 hover:-translate-y-0.5">
-              <span className="text-[9px] font-black uppercase tracking-widest text-black/50 block font-mono">HEALTH INDEX</span>
-              <span className="text-sm font-mono font-black text-black">
-                {res.healthScoreBefore} <span className="text-black/40">→</span> <span className="text-swiss-red">{res.healthScoreAfter}/100</span>
-              </span>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* 5-Stage Operating Doctrine Ribbon */}
-        <ScrollReveal delay={400} direction="up" distance={16} className="w-full max-w-3xl">
-          <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 py-2.5 border-y-2 border-black/10">
-            {cfg.workflowStages.map((stg, i) => (
-              <div key={stg.num} className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-swiss-red">{stg.num}.</span>
-                <span className="font-black text-xs sm:text-sm uppercase tracking-wider text-black">{stg.label}</span>
-                {i < cfg.workflowStages.length - 1 && (
-                  <span className="text-black/30 mx-1 hidden sm:inline">/</span>
-                )}
+        {/* Bottom Status / Verification Strip with Subtle Glass Backing */}
+        <ScrollReveal delay={340} direction="up" distance={12}>
+          <div className="pt-4 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#d0d0d0] tracking-wider uppercase [text-shadow:_0_1px_8px_rgba(0,0,0,0.9)]">
+            
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-2 text-white">
+                <CheckCircle2 className="w-3.5 h-3.5 text-swiss-red" />
+                <span className="font-bold">120S VERIFICATION CONFIRMED</span>
               </div>
-            ))}
-          </div>
-        </ScrollReveal>
+              <div className="flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5 text-white/80" />
+                <span>INC-8924 RESOLVED</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Activity className="w-3.5 h-3.5 text-white/80" />
+                <span>HEALTH 74 → 91/100</span>
+              </div>
+              <div className="flex items-center gap-2 hidden lg:flex">
+                <Cpu className="w-3.5 h-3.5 text-white/80" />
+                <span>ZERO FALSE OPTIMISMS</span>
+              </div>
+            </div>
 
-        {/* Action CTAs */}
-        <ScrollReveal delay={460} direction="up" distance={20} className="w-full max-w-md">
-          <div className="flex flex-col sm:flex-row items-center gap-3.5">
-            <Link href={cfg.routes.register} className="w-full sm:w-1/2">
-              <button className="w-full h-14 bg-black text-white font-black text-sm uppercase tracking-widest hover:bg-swiss-red hover:text-white transition-all duration-200 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5">
-                DEPLOY AGENT
-              </button>
-            </Link>
-            <Link href={cfg.routes.dashboard} className="w-full sm:w-1/2">
-              <button className="w-full h-14 bg-white text-black font-black text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-200 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5">
-                LAUNCH DEMO
-              </button>
-            </Link>
-          </div>
-        </ScrollReveal>
+            <div className="flex items-center gap-3">
+              <Link href={cfg.routes.login} className="text-white/80 hover:text-white transition-colors underline underline-offset-4">
+                Login to Console
+              </Link>
+            </div>
 
-        <ScrollReveal delay={520} direction="up" distance={12}>
-          <div className="flex items-center gap-3 text-xs font-mono font-bold text-black/60 uppercase tracking-widest">
-            <Link href={cfg.routes.login} className="hover:text-swiss-red underline decoration-2 underline-offset-4">
-              LOGIN TO WORKSPACE
-            </Link>
-            <span>•</span>
-            <span>{cfg.verificationLabel}</span>
           </div>
         </ScrollReveal>
 

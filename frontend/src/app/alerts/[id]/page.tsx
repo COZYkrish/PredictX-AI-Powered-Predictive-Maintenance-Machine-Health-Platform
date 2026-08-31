@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 import { 
-  AlertTriangle, CheckCircle, Clock, Cpu, HardDrive, Battery, 
+  AlertTriangle, CheckCircle, Clock, Cpu, HardDrive, 
   Activity, ArrowLeft, Loader2, Info, List
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -100,14 +99,15 @@ export default function IssueInvestigationPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="flex items-center justify-center h-[60vh] font-mono text-white/50 text-xs">
+        <Loader2 className="w-6 h-6 animate-spin mr-2" />
+        LOADING DIAGNOSTIC DOSSIER...
       </div>
     );
   }
 
   if (!issue) {
-    return <div className="p-8 text-white">Issue not found.</div>;
+    return <div className="p-8 text-white font-mono text-xs">Issue not found.</div>;
   }
 
   const isResolved = issue.status === "RESOLVED";
@@ -115,97 +115,97 @@ export default function IssueInvestigationPage() {
   const isPersisting = issue.status === "PERSISTING" || issue.status === "ESCALATED";
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6 text-slate-200">
-      <Button variant="ghost" className="mb-4 text-slate-400 hover:text-white" onClick={() => router.push("/alerts")}>
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Alerts
-      </Button>
+    <div className="max-w-5xl mx-auto space-y-6 text-[#fafafa] font-manrope">
+      <button 
+        className="flex items-center gap-2 text-xs font-mono font-bold text-white/50 hover:text-white uppercase tracking-wider transition-colors" 
+        onClick={() => router.push("/alerts")}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>BACK TO INCIDENT DOCKET</span>
+      </button>
 
       {isResolved && (
-        <div className="bg-emerald-900/40 border border-emerald-500/50 p-6 rounded-lg flex items-start space-x-4">
-          <CheckCircle className="w-8 h-8 text-emerald-400 mt-1" />
+        <div className="bg-emerald-950/40 border border-emerald-500/40 p-6 rounded-2xl flex items-start space-x-4 shadow-xl">
+          <CheckCircle className="w-7 h-7 text-emerald-400 mt-1 shrink-0" />
           <div>
-            <h2 className="text-xl font-semibold text-emerald-400 mb-2">ISSUE RESOLVED</h2>
-            <p className="text-emerald-200/80 mb-4">
-              The system has verified that the issue has been corrected. Health score has been recalculated.
+            <h2 className="text-base font-bold font-mono text-emerald-400 uppercase tracking-wider mb-1">INCIDENT RESOLVED</h2>
+            <p className="text-xs text-white/70 mb-3">
+              The automated verification pipeline confirmed telemetry stability within threshold boundaries. Health index recalculated.
             </p>
-            <div className="grid grid-cols-2 gap-4 text-sm bg-emerald-950/50 p-4 rounded">
-              <div>
-                <span className="text-emerald-500/80 block">Resolution Time</span>
-                <span className="text-emerald-100">{issue.resolution_duration_seconds} seconds</span>
-              </div>
+            <div className="bg-black/50 p-3 rounded-xl border border-white/10 font-mono text-xs text-white/80">
+              <span className="text-white/40 block text-[10px]">RESOLUTION DURATION</span>
+              <span className="font-bold text-emerald-400">{issue.resolution_duration_seconds} seconds verified</span>
             </div>
           </div>
         </div>
       )}
 
       {isPersisting && (
-        <div className="bg-red-900/40 border border-red-500/50 p-6 rounded-lg flex items-start space-x-4">
-          <AlertTriangle className="w-8 h-8 text-red-400 mt-1" />
-          <div>
-            <h2 className="text-xl font-semibold text-red-400 mb-2">ISSUE PERSISTS</h2>
-            <p className="text-red-200/80 mb-4">
-              The verification target was not met within the required duration. 
-              {issue.status === "ESCALATED" && " This issue has been escalated."}
-            </p>
+        <div className="bg-swiss-red/15 border border-swiss-red/40 p-6 rounded-2xl flex items-start space-x-4 shadow-xl">
+          <AlertTriangle className="w-7 h-7 text-swiss-red mt-1 shrink-0" />
+          <div className="space-y-3">
+            <div>
+              <h2 className="text-base font-bold font-mono text-swiss-red uppercase tracking-wider mb-1">INCIDENT PERSISTS</h2>
+              <p className="text-xs text-white/80">
+                The verification target was not sustained within the required test window. 
+                {issue.status === "ESCALATED" && " This incident has been escalated to Tier-2 response."}
+              </p>
+            </div>
             {!isResolved && issue.status !== "ESCALATED" && (
-              <div className="flex space-x-3">
-                <Button 
+              <div className="flex space-x-3 pt-1">
+                <button 
                   onClick={() => handleAction("VERIFY")} 
                   disabled={actionLoading}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="rounded-full bg-white text-black font-bold text-xs uppercase px-4 py-2 hover:bg-white/90 transition-all cursor-pointer"
                 >
                   RETRY VERIFICATION
-                </Button>
-                <Button 
-                  variant="outline" 
+                </button>
+                <button 
                   onClick={() => handleAction("DISMISS")}
                   disabled={actionLoading}
-                  className="border-red-500/30 text-red-400 hover:bg-red-950/50"
+                  className="rounded-full bg-white/10 text-white font-bold text-xs uppercase px-4 py-2 hover:bg-white/20 transition-all border border-white/15 cursor-pointer"
                 >
                   DISMISS
-                </Button>
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white capitalize">
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase font-geist">
             {issue.issue_type.replace(/_/g, " ")}
           </h1>
-          <p className="text-slate-400 mt-1">Detected at {new Date(issue.detected_at).toLocaleString()}</p>
+          <p className="text-xs font-mono text-white/50 uppercase tracking-widest mt-1">Detected at {new Date(issue.detected_at).toLocaleString()}</p>
         </div>
-        <div className={`px-4 py-2 rounded-full font-semibold ${
-          issue.severity === 'CRITICAL' ? 'bg-red-900/50 text-red-400' :
-          issue.severity === 'HIGH' ? 'bg-orange-900/50 text-orange-400' :
-          'bg-yellow-900/50 text-yellow-400'
+        <div className={`px-4 py-1.5 rounded-full font-mono text-xs font-black uppercase tracking-wider w-fit ${
+          issue.severity === 'CRITICAL' || issue.severity === 'HIGH' ? 'bg-swiss-red text-white' : 'bg-white/20 text-white'
         }`}>
           {issue.severity} SEVERITY
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-            <h2 className="text-lg font-semibold text-white flex items-center mb-4">
-              <Activity className="w-5 h-5 mr-2 text-blue-400" />
-              Diagnostic Evidence
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-[#0d0d0d] border border-white/15 p-6 rounded-2xl shadow-xl">
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white flex items-center mb-4">
+              <Activity className="w-4 h-4 mr-2 text-white" />
+              DIAGNOSTIC EVIDENCE DOSSIER
             </h2>
-            <div className="whitespace-pre-wrap text-slate-300 font-mono text-sm bg-slate-950 p-4 rounded-lg border border-slate-800/50">
+            <div className="whitespace-pre-wrap text-white/90 font-mono text-xs bg-[#141414] p-4 rounded-xl border border-white/10 leading-relaxed">
               {issue.explanation}
             </div>
             
             {issue.likely_causes && issue.likely_causes.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-sm font-medium text-slate-400 mb-3 uppercase tracking-wider">Likely Causes</h3>
+                <h3 className="text-[10px] font-mono font-bold text-white/50 mb-3 uppercase tracking-widest">LIKELY ROOT CAUSES</h3>
                 <ul className="space-y-2">
                   {issue.likely_causes.map((cause, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <Info className="w-4 h-4 text-slate-500 mr-2 mt-0.5 flex-shrink-0" />
-                      <span className="text-slate-200">{cause}</span>
+                    <li key={idx} className="flex items-start text-xs text-white/80 font-mono">
+                      <span className="text-swiss-red mr-2 font-bold">›</span>
+                      <span>{cause}</span>
                     </li>
                   ))}
                 </ul>
@@ -213,13 +213,10 @@ export default function IssueInvestigationPage() {
             )}
             
             {issue.evidence_level && (
-              <div className="mt-6 pt-6 border-t border-slate-800/50">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-400">Confidence Level</span>
-                  <span className={`text-sm font-medium px-2 py-1 rounded bg-slate-800 ${
-                    issue.evidence_level === 'CONFIRMED_BY_TELEMETRY' ? 'text-emerald-400' :
-                    issue.evidence_level === 'SUPPORTED' ? 'text-blue-400' : 'text-slate-300'
-                  }`}>
+              <div className="mt-6 pt-5 border-t border-white/10">
+                <div className="flex justify-between items-center text-xs font-mono">
+                  <span className="text-white/50 uppercase">CONFIDENCE LEVEL</span>
+                  <span className="font-bold text-white uppercase bg-white/10 px-2.5 py-1 rounded-sm">
                     {issue.evidence_level.replace(/_/g, " ")}
                   </span>
                 </div>
@@ -227,93 +224,53 @@ export default function IssueInvestigationPage() {
             )}
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-            <h2 className="text-lg font-semibold text-white mb-4">Actionable Recommendation</h2>
-            <div className="mb-6 space-y-1">
-              {issue.recommendation
-                ? issue.recommendation.split('\n').map((line, idx) => {
-                    const trimmed = line.trim();
-                    // Section headers: ALL CAPS ending with colon
-                    if (/^[A-Z0-9 _/-]+:$/.test(trimmed) && trimmed.length > 3) {
-                      return (
-                        <p key={idx} className="text-blue-400 text-xs font-bold uppercase tracking-widest mt-4 mb-1">
-                          {trimmed}
-                        </p>
-                      );
-                    }
-                    // Numbered steps: "  1. Do something"
-                    if (/^\s*\d+\.\s/.test(line)) {
-                      const match = line.match(/^(\s*)(\d+\.\s)(.+)$/);
-                      if (match) {
-                        return (
-                          <p key={idx} className="text-slate-200 text-sm flex items-start">
-                            <span className="text-blue-500 font-semibold mr-2 shrink-0">{match[2].trim()}</span>
-                            <span>{match[3]}</span>
-                          </p>
-                        );
-                      }
-                    }
-                    // Bullet lines: "  • Process — CPU 12.3%"
-                    if (/^\s*•\s/.test(line) || /^\s*-\s/.test(line)) {
-                      return (
-                        <p key={idx} className="text-emerald-300 text-sm font-mono pl-4">
-                          {trimmed}
-                        </p>
-                      );
-                    }
-                    // First line (summary sentence) — slightly larger
-                    if (idx === 0 && trimmed.length > 0) {
-                      return (
-                        <p key={idx} className="text-slate-100 text-sm font-medium">
-                          {trimmed}
-                        </p>
-                      );
-                    }
-                    // Empty line
-                    if (trimmed === '') return <div key={idx} className="h-1" />;
-                    // Default
-                    return (
-                      <p key={idx} className="text-slate-300 text-sm pl-1">
-                        {trimmed}
-                      </p>
-                    );
-                  })
-                : <p className="text-slate-500 text-sm">No recommendation available.</p>
-              }
+          <div className="bg-[#0d0d0d] border border-white/15 p-6 rounded-2xl shadow-xl">
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white mb-4">ACTIONABLE REMEDIATION PROTOCOL</h2>
+            <div className="mb-6 space-y-2 font-mono text-xs">
+              {issue.recommendation ? (
+                <div className="text-white/80 leading-relaxed whitespace-pre-wrap bg-[#141414] p-4 rounded-xl border border-white/10">
+                  {issue.recommendation}
+                </div>
+              ) : (
+                <p className="text-white/40 text-xs font-mono">No recommendation available.</p>
+              )}
             </div>
 
             {(issue.issue_type === "HIGH_CPU_USAGE" || issue.issue_type === "MEMORY_PRESSURE") && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" onClick={fetchTopProcesses} className="w-full bg-slate-950 border-slate-800 text-slate-300 hover:text-white">
-                    <List className="w-4 h-4 mr-2" />
-                    VIEW TOP {issue.issue_type === "HIGH_CPU_USAGE" ? "CPU" : "MEMORY"} PROCESSES
-                  </Button>
+                  <button 
+                    onClick={fetchTopProcesses} 
+                    className="w-full rounded-full bg-white/10 hover:bg-white text-white hover:text-black border border-white/15 py-3 text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <List className="w-4 h-4" />
+                    <span>VIEW TOP {issue.issue_type === "HIGH_CPU_USAGE" ? "CPU" : "MEMORY"} PROCESS FOOTPRINT</span>
+                  </button>
                 </DialogTrigger>
-                <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-2xl">
+                <DialogContent className="bg-[#121212] border border-white/20 text-white sm:max-w-2xl font-mono">
                   <DialogHeader>
-                    <DialogTitle>Top {issue.issue_type === "HIGH_CPU_USAGE" ? "CPU" : "Memory"} Consumers</DialogTitle>
+                    <DialogTitle className="text-sm font-bold uppercase tracking-wider text-white">Top {issue.issue_type === "HIGH_CPU_USAGE" ? "CPU" : "Memory"} Consumers</DialogTitle>
                   </DialogHeader>
                   <div className="mt-4">
                     {processesLoading ? (
-                      <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
+                      <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>
                     ) : processes.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-slate-950 rounded text-xs font-semibold text-slate-400 uppercase">
-                          <div className="col-span-2">Process Name</div>
+                      <div className="space-y-1.5">
+                        <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-[#181818] rounded-lg text-[10px] font-bold text-white/50 uppercase">
+                          <div className="col-span-2">PROCESS NAME</div>
                           <div>PID</div>
-                          <div>{issue.issue_type === "HIGH_CPU_USAGE" ? "CPU %" : "Mem %"}</div>
+                          <div>{issue.issue_type === "HIGH_CPU_USAGE" ? "CPU %" : "MEM %"}</div>
                         </div>
                         {processes.map((p, idx) => (
-                          <div key={idx} className="grid grid-cols-4 gap-4 px-4 py-3 bg-slate-800/50 rounded text-sm items-center">
-                            <div className="col-span-2 font-mono truncate">{p.process_name}</div>
-                            <div className="text-slate-400">{p.pid}</div>
-                            <div className="font-semibold">{issue.issue_type === "HIGH_CPU_USAGE" ? p.cpu_percent.toFixed(1) : p.memory_percent.toFixed(1)}%</div>
+                          <div key={idx} className="grid grid-cols-4 gap-4 px-4 py-2.5 bg-white/[0.03] rounded-lg text-xs items-center border border-white/5">
+                            <div className="col-span-2 font-bold truncate text-white">{p.process_name}</div>
+                            <div className="text-white/50">{p.pid}</div>
+                            <div className="font-bold text-swiss-red">{issue.issue_type === "HIGH_CPU_USAGE" ? p.cpu_percent.toFixed(1) : p.memory_percent.toFixed(1)}%</div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center p-8 text-slate-500">Process data is currently unavailable on this device.</div>
+                      <div className="text-center p-8 text-white/40 text-xs">Process telemetry unavailable on node.</div>
                     )}
                   </div>
                 </DialogContent>
@@ -323,74 +280,68 @@ export default function IssueInvestigationPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-            <h3 className="text-sm font-medium text-slate-400 mb-4 uppercase tracking-wider">Current State</h3>
+          <div className="bg-[#0d0d0d] border border-white/15 p-6 rounded-2xl shadow-xl font-mono">
+            <h3 className="text-[10px] font-bold text-white/50 mb-4 uppercase tracking-widest">STATE SNAPSHOT</h3>
             <div className="space-y-4">
-              <div>
-                <span className="text-xs text-slate-500 block">OBSERVED VALUE</span>
-                <span className="text-2xl font-semibold text-white">{issue.current_value?.toFixed(1) || 'N/A'}%</span>
+              <div className="bg-[#141414] p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-white/40 block mb-1">OBSERVED VALUE</span>
+                <span className="text-3xl font-black text-swiss-red">{issue.current_value?.toFixed(1) || 'N/A'}%</span>
               </div>
-              <div>
-                <span className="text-xs text-slate-500 block">THRESHOLD</span>
-                <span className="text-lg text-slate-300">{issue.threshold}%</span>
+              <div className="bg-[#141414] p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-white/40 block mb-1">THRESHOLD</span>
+                <span className="text-xl font-bold text-white">{issue.threshold}%</span>
               </div>
-              <div>
-                <span className="text-xs text-slate-500 block">DURATION</span>
-                <span className="text-lg text-slate-300">~{issue.duration_seconds} seconds</span>
+              <div className="bg-[#141414] p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-white/40 block mb-1">DURATION</span>
+                <span className="text-xl font-bold text-white">~{issue.duration_seconds} seconds</span>
               </div>
-              {issue.baseline_value && (
-                <div>
-                  <span className="text-xs text-slate-500 block">BASELINE</span>
-                  <span className="text-lg text-slate-300">{issue.baseline_value.toFixed(1)}%</span>
-                </div>
-              )}
             </div>
           </div>
 
-          <div className="bg-blue-950/30 border border-blue-900/50 p-6 rounded-xl">
-            <h3 className="text-sm font-medium text-blue-400 mb-4 uppercase tracking-wider">Verification</h3>
+          <div className="bg-[#0d0d0d] border border-white/15 p-6 rounded-2xl shadow-xl font-mono">
+            <h3 className="text-[10px] font-bold text-white/50 mb-4 uppercase tracking-widest">VERIFICATION GATE</h3>
             
             {issue.verification_target !== null ? (
               <div className="space-y-4">
-                <div>
-                  <span className="text-xs text-blue-400/60 block">TARGET</span>
-                  <span className="text-lg text-blue-100 font-mono">
+                <div className="bg-[#141414] p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] text-white/40 block mb-1">VERIFICATION TARGET</span>
+                  <span className="text-sm font-bold text-white">
                     {issue.verification_metric} {issue.verification_operator} {issue.verification_target}
                   </span>
                 </div>
-                <div>
-                  <span className="text-xs text-blue-400/60 block">REQUIRED DURATION</span>
-                  <span className="text-lg text-blue-100">{issue.verification_duration_seconds} seconds</span>
+                <div className="bg-[#141414] p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] text-white/40 block mb-1">STABILITY WINDOW</span>
+                  <span className="text-sm font-bold text-white">{issue.verification_duration_seconds} seconds</span>
                 </div>
                 
                 {isVerifying && (
-                  <div className="mt-4 pt-4 border-t border-blue-900/50">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-blue-300">Verifying...</span>
-                      <span className="text-blue-100 font-mono">{elapsed} / {issue.verification_duration_seconds}s</span>
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="flex justify-between text-xs mb-2">
+                      <span className="text-white font-bold">Verifying telemetry...</span>
+                      <span className="text-white font-bold">{elapsed} / {issue.verification_duration_seconds}s</span>
                     </div>
-                    <div className="w-full bg-blue-950 rounded-full h-2">
+                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                       <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                        className="bg-white h-2 rounded-full transition-all duration-1000 ease-linear shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                         style={{ width: `${Math.min(100, (elapsed / (issue.verification_duration_seconds || 1)) * 100)}%` }}
-                      ></div>
+                      />
                     </div>
                   </div>
                 )}
 
                 {!isResolved && !isVerifying && issue.status !== "ESCALATED" && (
-                  <Button 
-                    className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                  <button 
+                    className="w-full mt-4 rounded-full bg-white text-black font-bold text-xs uppercase tracking-wider py-3.5 hover:bg-white/90 transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
                     onClick={() => handleAction("VERIFY")}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                     START VERIFICATION
-                  </Button>
+                  </button>
                 )}
               </div>
             ) : (
-              <div className="text-sm text-slate-400">No verification target set.</div>
+              <div className="text-xs text-white/40">No verification target defined.</div>
             )}
           </div>
         </div>

@@ -12,16 +12,16 @@ export default function Chapter02Drift() {
   return (
     <section
       id="chapter-02"
-      className="relative border-b-4 border-black bg-[#F8F8F8] min-h-[calc(100vh-4rem)] flex items-center py-10 lg:py-14 px-6 md:px-12 lg:px-16 swiss-dots overflow-hidden"
+      className="relative border-b-4 border-black bg-[#F8F8F8] h-screen min-h-screen w-full flex items-center justify-center px-6 md:px-12 lg:px-16 pt-20 pb-8 swiss-dots overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
         
         {/* Left Column: 7 Columns */}
         <div className="lg:col-span-7 text-left">
           
-          <ScrollReveal delay={0} direction="down" distance={16}>
+          <ScrollReveal delay={0} direction="down" distance={12}>
             <div className="flex items-center gap-3 mb-4">
-              <span className="bg-swiss-red text-white text-xs font-black px-3 py-1 tracking-widest uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <span className="bg-swiss-red text-white text-xs font-black px-3.5 py-1 tracking-widest uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                 {PROJECT_CONFIG.sceneLabels.drift}
               </span>
               <span className="text-black/50 text-xs font-mono tracking-widest uppercase font-bold">
@@ -31,38 +31,38 @@ export default function Chapter02Drift() {
           </ScrollReveal>
 
           <div className="space-y-1">
-            <ScrollReveal delay={80} direction="up" distance={24}>
+            <ScrollReveal delay={80} direction="up" distance={20}>
               <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.88] text-black">
                 ENTROPY IS INVISIBLE.
               </h2>
             </ScrollReveal>
-            <ScrollReveal delay={160} direction="up" distance={24}>
+            <ScrollReveal delay={140} direction="up" distance={20}>
               <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.88] text-black/40">
                 PREDICTX MAPS THE TRAJECTORY.
               </h2>
             </ScrollReveal>
           </div>
 
-          <ScrollReveal delay={240} direction="up" distance={20}>
-            <p className="mt-6 text-base sm:text-lg md:text-xl font-bold text-black/80 uppercase tracking-tight leading-snug">
+          <ScrollReveal delay={200} direction="up" distance={16}>
+            <p className="mt-6 text-base sm:text-lg md:text-xl font-bold text-black/85 uppercase tracking-tight leading-snug max-w-xl">
               Conventional dashboards alert only after a threshold is shattered. PredictX fits rolling linear regression across 180 telemetry snapshots to project system state 30 minutes into the future.
             </p>
           </ScrollReveal>
 
-          <ScrollReveal delay={320} direction="up" distance={16}>
-            <div className="mt-5 inline-block border-2 border-black px-3.5 py-1.5 bg-white font-mono text-xs uppercase tracking-widest text-black/80 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          <ScrollReveal delay={260} direction="up" distance={12}>
+            <div className="mt-5 inline-block border-2 border-black px-4 py-1.5 bg-white font-mono text-xs uppercase tracking-widest text-black/85 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               {PROJECT_CONFIG.forecastLabel}
             </div>
           </ScrollReveal>
 
           {/* Metric Selector Buttons */}
-          <ScrollReveal delay={380} direction="up" distance={16}>
-            <div className="mt-6 flex flex-wrap gap-2.5 font-mono text-xs">
+          <ScrollReveal delay={320} direction="up" distance={12}>
+            <div className="mt-6 flex flex-wrap gap-3 font-mono text-xs">
               {(['ram', 'cpu', 'disk'] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => setActiveMetric(m)}
-                  className={`px-4 py-2 uppercase font-black border-2 border-black transition-all duration-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 ${
+                  className={`px-4 py-2 uppercase font-black border-2 border-black transition-all duration-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 text-xs sm:text-sm ${
                     activeMetric === m ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'
                   }`}
                 >
@@ -74,14 +74,14 @@ export default function Chapter02Drift() {
         </div>
 
         {/* Right Column: 5 Columns */}
-        <ScrollReveal delay={180} direction="left" distance={36} className="lg:col-span-5 w-full">
-          <div className="border-4 border-black bg-white flex flex-col shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform duration-300 hover:-translate-y-1">
+        <ScrollReveal delay={180} direction="left" distance={30} className="lg:col-span-5 w-full">
+          <div className="border-4 border-black bg-white flex flex-col shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-transform duration-300 hover:-translate-y-1">
             
             {/* Header Banner */}
             <div className="bg-black text-white px-5 py-3.5 flex justify-between items-center border-b-4 border-black">
               <div>
                 <span className="text-[10px] font-mono tracking-widest text-white/60 uppercase block font-bold">LINEAR REGRESSION MODEL</span>
-                <span className="text-sm font-black uppercase tracking-wider">{f.metric}</span>
+                <span className="text-sm sm:text-base font-black uppercase tracking-wider">{f.metric}</span>
               </div>
               <span className="bg-swiss-red text-white font-mono text-xs font-black px-2.5 py-1 uppercase animate-pulse">
                 {f.trend} ↑
@@ -111,7 +111,7 @@ export default function Chapter02Drift() {
               </svg>
             </div>
 
-            {/* Numeric Trajectory Matrix */}
+            {/* Numeric Trajectory Matrix with Larger Numbers */}
             <div className="grid grid-cols-2 border-b-2 border-black bg-black">
               <div className="bg-white p-4 border-r-2 border-black">
                 <span className="text-[10px] font-bold text-black/50 uppercase block font-mono">NOW (OBSERVED)</span>
@@ -128,12 +128,12 @@ export default function Chapter02Drift() {
             {/* Breach Advisory */}
             <div className="p-4 bg-white flex flex-col gap-1.5 font-mono text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-black/60 uppercase font-bold">TIME TO THRESHOLD:</span>
+                <span className="text-black/60 uppercase font-bold text-xs">TIME TO THRESHOLD:</span>
                 <span className="font-black text-swiss-red text-sm">~{f.etaThresholdMinutes} MIN</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-black/60 uppercase font-bold">ADVISORY STATUS:</span>
-                <span className="font-black text-black uppercase">{f.status}</span>
+                <span className="text-black/60 uppercase font-bold text-xs">ADVISORY STATUS:</span>
+                <span className="font-black text-black uppercase text-xs">{f.status}</span>
               </div>
             </div>
 

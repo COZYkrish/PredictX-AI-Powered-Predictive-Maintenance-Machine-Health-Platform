@@ -31,18 +31,26 @@ export function Sidebar({ onClose }: SidebarProps) {
   });
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center justify-between border-b px-4 lg:h-[60px]">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <Activity className="h-6 w-6 text-healthy" />
-          <span className="text-lg">PredictX</span>
+    <div className="flex h-full flex-col bg-[#080808] text-white">
+      {/* Brand Header */}
+      <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
+        <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <svg className="w-5 h-5 fill-white transition-transform group-hover:scale-105" viewBox="0 0 256 256">
+            <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 0 0 C 70.692 0 128 57.308 128 128 C 57.308 128 0 70.692 0 0 Z M 256 0 C 256 70.692 198.692 128 128 128 C 128 57.308 185.308 0 256 0 Z" />
+          </svg>
+          <span className="text-base font-semibold text-white tracking-tight flex items-center gap-1.5 font-geist">
+            <span>predictx</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-swiss-red animate-pulse" />
+          </span>
         </Link>
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>
+        <Button variant="ghost" size="icon" className="lg:hidden text-white/70 hover:text-white" onClick={onClose}>
           <X className="h-5 w-5" />
           <span className="sr-only">Close sidebar</span>
         </Button>
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+
+      {/* Navigation Items */}
+      <nav className="flex-1 space-y-1.5 overflow-y-auto p-4 font-geist">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -50,27 +58,29 @@ export function Sidebar({ onClose }: SidebarProps) {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-150",
                 isActive 
-                  ? "bg-primary/10 text-primary" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-white/10 text-white border-l-2 border-swiss-red shadow-sm" 
+                  : "text-white/60 hover:bg-white/5 hover:text-white"
               )}
               onClick={() => onClose()}
             >
-              <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
-              {item.name}
+              <item.icon className={cn("h-4 w-4", isActive ? "text-swiss-red" : "text-white/50")} />
+              <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
-      <div className="border-t p-4">
-        <div className="flex items-center gap-3 rounded-md bg-muted/50 px-3 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+
+      {/* User Info Footer */}
+      <div className="border-t border-white/10 p-4">
+        <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/10 px-3.5 py-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black font-bold text-xs">
             {user?.email?.charAt(0).toUpperCase() || 'U'}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium truncate w-32">{user?.email || 'User'}</span>
-            <span className="text-xs text-muted-foreground capitalize">{user?.role?.toLowerCase() || 'Viewer'}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-semibold text-white truncate">{user?.email || 'User'}</span>
+            <span className="text-[10px] font-mono text-white/50 uppercase tracking-wider">{user?.role?.toLowerCase() || 'Viewer'}</span>
           </div>
         </div>
       </div>

@@ -13,25 +13,23 @@ interface ScrollRevealProps {
   threshold?: number;
   triggerOnce?: boolean;
   scale?: boolean;
-  blur?: boolean;
 }
 
 export default function ScrollReveal({
   children,
   className = '',
   delay = 0,
-  duration = 700,
+  duration = 600,
   direction = 'up',
-  distance = 28,
+  distance = 24,
   threshold = 0.1,
-  triggerOnce = false, // Animate continuously on scroll up/down
-  scale = true,
-  blur = true,
+  triggerOnce = false, // Animate smoothly on scroll
+  scale = false, // Keep default false for pure hardware transform performance
 }: ScrollRevealProps) {
   const { ref, isVisible } = useScrollReveal<HTMLDivElement>({ threshold, triggerOnce });
 
   const getTransform = () => {
-    const scaleTransform = scale ? (isVisible ? 'scale(1)' : 'scale(0.97)') : '';
+    const scaleTransform = scale ? (isVisible ? 'scale(1)' : 'scale(0.98)') : '';
     if (isVisible) return `translate3d(0, 0, 0) ${scaleTransform}`.trim();
     
     switch (direction) {
@@ -55,12 +53,12 @@ export default function ScrollReveal({
       style={{
         opacity: isVisible ? 1 : 0,
         transform: getTransform(),
-        filter: blur ? (isVisible ? 'blur(0px)' : 'blur(4px)') : 'none',
-        transitionProperty: 'opacity, transform, filter',
+        transitionProperty: 'opacity, transform',
         transitionDuration: `${duration}ms`,
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
         transitionDelay: `${delay}ms`,
-        willChange: 'opacity, transform, filter',
+        willChange: 'opacity, transform',
+        backfaceVisibility: 'hidden',
       }}
     >
       {children}
