@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
+import { cn } from '@/lib/utils';
 import './LiquidChrome.css';
 
 export interface LiquidChromeProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -15,10 +16,10 @@ export interface LiquidChromeProps extends React.HTMLAttributes<HTMLDivElement> 
 
 export const LiquidChrome: React.FC<LiquidChromeProps> = ({
   baseColor = [0.1, 0.1, 0.1],
-  speed = 0.2,
-  amplitude = 0.3,
-  frequencyX = 3,
-  frequencyY = 3,
+  speed = 1.0,
+  amplitude = 0.6,
+  frequencyX = 2.5,
+  frequencyY = 1.5,
   interactive = true,
   className,
   ...props
@@ -39,7 +40,7 @@ export const LiquidChrome: React.FC<LiquidChromeProps> = ({
     }
 
     const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 0);
+    gl.clearColor(0, 0, 0, 1);
 
     const vertexShader = `
       attribute vec2 position;
@@ -77,7 +78,7 @@ export const LiquidChrome: React.FC<LiquidChromeProps> = ({
           float ripple = sin(10.0 * dist - uTime * 2.0) * 0.03;
           uv += (diff / (dist + 0.0001)) * ripple * falloff;
 
-          vec3 color = uBaseColor / max(abs(sin(uTime - uv.y - uv.x)), 0.001);
+          vec3 color = uBaseColor / abs(sin(uTime - uv.y - uv.x));
           return vec4(color, 1.0);
       }
 
